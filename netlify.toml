@@ -1,0 +1,25 @@
+[build]
+  publish = "."
+
+[build.environment]
+  SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
+
+# Root URL → home splash page
+[[redirects]]
+  from = "/"
+  to   = "/home.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/index.html"
+  to   = "/pantry.html"
+  status = 301
+  force = true
+
+# Force browsers to always revalidate HTML files
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"

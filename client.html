@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pantry Program — Client Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+:root {
+  --orange: #E8513A;
+  --orange-light: rgba(232,81,58,.08);
+  --green: #16a34a;
+  --green-bg: rgba(22,163,74,.08);
+  --amber: #d97706;
+  --amber-bg: rgba(217,119,6,.08);
+  --red: #dc2626;
+  --red-bg: rgba(220,38,38,.08);
+  --bg: #f8f6f2;
+  --card: #ffffff;
+  --border: #e8e3dc;
+  --text: #1a1a1a;
+  --text-muted: #888;
+  --text-dim: #bbb;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+*{ -webkit-tap-highlight-color: transparent; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── HEADER ── */
+header {
+  background: #000;
+  padding: 0 40px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo { display: flex; align-items: center; text-decoration: none; }
+.logo-word { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 900; color: var(--orange); letter-spacing: -1px; text-transform: uppercase; }
+.logo-byfooda { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+.logo-by { font-size: 9px; color: #888; letter-spacing: 1px; text-transform: uppercase; }
+.logo-tiles { display: inline-flex; gap: 2px; }
+.logo-tiles span { background: var(--orange); color: #000; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 8px; width: 13px; height: 13px; display: inline-flex; align-items: center; justify-content: center; border-radius: 2px; }
+.logo-lockup { display: flex; flex-direction: column; line-height: 1; }
+.logo-div { width: 1px; background: #333; height: 24px; margin: 0 12px; }
+.logo-sub { font-size: 10px; letter-spacing: 2px; color: #888; text-transform: uppercase; }
+.header-location { font-size: 13px; color: #888; font-weight: 500; }
+
+/* ── HERO ── */
+.hero {
+  background: #000;
+  border-bottom: 1px solid #111;
+  padding: 40px 40px 48px;
+}
+.hero-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--orange); margin-bottom: 10px; }
+.hero-title { font-family: 'Playfair Display', serif; font-size: 44px; font-weight: 900; color: #fff; line-height: 1.05; margin-bottom: 6px; }
+.hero-title span { color: var(--orange); }
+.hero-sub { font-size: 14px; color: #666; margin-bottom: 28px; }
+.hero-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.hero-stat { background: #111; border: 1px solid #1a1a1a; border-radius: 12px; padding: 20px; }
+.hero-stat-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #666; margin-bottom: 8px; }
+.hero-stat-val { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; line-height: 1; }
+.hero-stat-val.green { color: var(--green); }
+.hero-stat-val.orange { color: var(--orange); }
+.hero-stat-val.amber { color: var(--amber); }
+.hero-stat-val.white { color: #fff; }
+.hero-stat-sub { font-size: 12px; color: #555; margin-top: 4px; }
+
+/* ── MAIN ── */
+main { max-width: 1000px; margin: 0 auto; padding: 40px 40px 80px; }
+
+/* ── SECTION HEADERS ── */
+.section-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 20px; margin-top: 40px; }
+.section-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; }
+.section-count { font-size: 13px; color: var(--text-muted); }
+
+/* ── STATUS BANNER ── */
+.status-banner {
+  border-radius: 14px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+  border: 1px solid;
+}
+.status-banner.all-clear { background: var(--green-bg); border-color: rgba(22,163,74,.2); }
+.status-banner.has-issues { background: var(--amber-bg); border-color: rgba(217,119,6,.2); }
+.status-banner.no-data { background: #f7f5f2; border-color: var(--border); }
+.status-icon { font-size: 28px; flex-shrink: 0; }
+.status-text-title { font-size: 16px; font-weight: 700; }
+.status-text-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+/* ── AUDIT CARDS ── */
+.audit-list { display: flex; flex-direction: column; gap: 12px; }
+.audit-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 24px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  transition: box-shadow .2s;
+  cursor: pointer;
+}
+.audit-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.06); }
+.audit-card-left { display: flex; flex-direction: column; gap: 6px; }
+.audit-date { font-size: 13px; font-weight: 700; color: var(--text); }
+.audit-meta { display: flex; gap: 16px; flex-wrap: wrap; }
+.audit-meta-item { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+.audit-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 20px;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+.badge-clear { background: var(--green-bg); color: var(--green); }
+.badge-issues { background: var(--amber-bg); color: var(--amber); }
+.badge-red { background: var(--red-bg); color: var(--red); }
+
+/* ── ISSUES LIST ── */
+.issues-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 12px;
+}
+.issues-card-header { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+.issue-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.issue-row:last-child { border-bottom: none; }
+.issue-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); flex-shrink: 0; }
+.issue-dot.red { background: var(--red); }
+.issue-text { font-size: 13px; color: var(--text); flex: 1; }
+.issue-section { font-size: 11px; color: var(--text-dim); margin-left: auto; }
+
+/* ── DETAIL MODAL ── */
+.modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 500; padding: 20px; align-items: center; justify-content: center; }
+.modal-bg.show { display: flex; }
+.modal { background: var(--card); border-radius: 20px; max-width: 580px; width: 100%; max-height: 85vh; overflow-y: auto; }
+.modal-hdr { padding: 24px 24px 0; display: flex; align-items: flex-start; justify-content: space-between; }
+.modal-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; }
+.modal-date { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+.modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted); line-height: 1; padding: 4px; }
+.modal-body { padding: 20px 24px 24px; }
+.msec { margin-bottom: 20px; }
+.msec-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.mgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mitem { background: #f8f6f2; border-radius: 8px; padding: 10px 12px; }
+.mkey { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+.mval { font-size: 13px; font-weight: 600; color: var(--text); }
+.mval.green { color: var(--green); }
+.mval.red { color: var(--red); }
+
+/* ── FILTER BUTTONS ── */
+.f-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.f-btn:hover { border-color: var(--orange); color: var(--orange); }
+.f-btn.active { background: var(--orange); border-color: var(--orange); color: #fff; }
+
+/* ── EMPTY / LOADING ── */
+.empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+.empty-icon { font-size: 40px; margin-bottom: 12px; }
+.loading { text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 14px; }
+
+/* ── FOOTER ── */
+footer { text-align: center; padding: 32px 20px; border-top: 1px solid var(--border); }
+.footer-logo { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 900; color: var(--orange); margin-bottom: 4px; }
+.footer-text { font-size: 12px; color: var(--text-dim); }
+
+/* ── MOBILE ── */
+@media (max-width: 680px) {
+  header { padding: 0 16px; }
+  .hero { padding: 28px 16px 32px; }
+  .hero-title { font-size: 30px; }
+  .hero-stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hero-stat { padding: 14px; }
+  .hero-stat-val { font-size: 28px; }
+  main { padding: 24px 16px 60px; }
+  .audit-card { grid-template-columns: 1fr; }
+  .mgrid { grid-template-columns: 1fr; }
+  .modal-bg { padding: 12px; align-items: flex-end; }
+  .modal { border-radius: 20px 20px 0 0; max-height: 90vh; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="#">
+    <div class="logo-lockup">
+      <div class="logo-word">ORANGE</div>
+      <div class="logo-byfooda">
+        <span class="logo-by">by</span>
+        <div class="logo-tiles"><span>f</span><span>o</span><span>o</span><span>d</span><span>a</span></div>
+      </div>
+    </div>
+    <div class="logo-div"></div>
+    <div class="logo-sub">Pantry Program</div>
+  </a>
+  <div class="header-location" id="headerLocation">Loading…</div>
+</header>
+
+<div class="hero">
+  <div style="max-width:1000px;margin:0 auto">
+    <div class="hero-eyebrow">Site Dashboard</div>
+    <div class="hero-title" id="heroTitle">Loading <span>your data</span></div>
+    <div class="hero-sub" id="heroSub">Pantry audit history for your location</div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-label">Total Audits</div>
+        <div class="hero-stat-val white" id="statTotal">—</div>
+        <div class="hero-stat-sub">All time</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-label">All Clear Rate</div>
+        <div class="hero-stat-val green" id="statClear">—</div>
+        <div class="hero-stat-sub" id="statClearSub">of all audits</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-label">This Month</div>
+        <div class="hero-stat-val orange" id="statMonth">—</div>
+        <div class="hero-stat-sub">Audits logged</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-label">Last Audit</div>
+        <div class="hero-stat-val white" id="statLast" style="font-size:22px;margin-top:4px">—</div>
+        <div class="hero-stat-sub" id="statLastSub"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div id="statusBanner"></div>
+
+  <div class="section-header">
+    <div class="section-title">Audits</div>
+    <div class="section-count" id="auditCount"></div>
+    <div style="display:flex;gap:6px;margin-left:auto">
+      <button class="f-btn active" onclick="setFilter('all',this)">All Time</button>
+      <button class="f-btn" onclick="setFilter('month',this)">This Month</button>
+      <button class="f-btn" onclick="setFilter('week',this)">This Week</button>
+    </div>
+  </div>
+  <div class="audit-list" id="auditList">
+    <div class="loading">Loading audit history…</div>
+  </div>
+
+  <div id="issuesSection" style="display:none">
+    <div class="section-header" style="margin-top:36px">
+      <div class="section-title">Issues Found</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-left:8px" id="issuesPeriod"></div>
+    </div>
+    <div id="issuesList"></div>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-logo">ORANGE</div>
+  <div class="footer-text">Pantry Program by Fooda · Powered by your operations team</div>
+</footer>
+
+<!-- DETAIL MODAL -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div>
+        <div class="modal-title" id="mTitle">Audit Detail</div>
+        <div class="modal-date" id="mDate"></div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('modalBg').classList.remove('show')">✕</button>
+    </div>
+    <div class="modal-body" id="mBody"></div>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCGTcu2VJQw8vP1hGF6uRuN8dCcs38zQRg",
+  projectId: "pantry-checklist",
+  storageBucket: "pantry-checklist.firebasestorage.app",
+  messagingSenderId: "564968122984",
+  appId: "1:564968122984:web:0140076461fab13c7b69dd"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// Get location from URL param
+const params = new URLSearchParams(window.location.search);
+const siteName = params.get('location') ? decodeURIComponent(params.get('location')) : null;
+
+if (!siteName) {
+  document.getElementById('heroTitle').innerHTML = 'No location <span>specified</span>';
+  document.getElementById('heroSub').textContent = 'Please use the link provided by your Fooda contact.';
+  document.getElementById('auditList').innerHTML = '<div class="empty"><div class="empty-icon">🔗</div><div>Missing location parameter</div></div>';
+}
+
+const ISSUE_MAP = {
+  coffee_func: ['Coffee Machine','Functioning'],
+  bevi_flavors: ['Bevi Machine','All flavors stocked'],
+  bevi_co2: ['Bevi Machine','CO2 full'],
+  bevi_func: ['Bevi Machine','Functioning'],
+  pantry_utensils: ['Pantry','Utensils stocked'],
+  pantry_napkins: ['Pantry','Napkins stocked'],
+  pantry_cups: ['Pantry','Cups stocked'],
+  pantry_plates: ['Pantry','Plates stocked'],
+  pantry_teas: ['Pantry','Teas stocked'],
+  pantry_condiments: ['Pantry','Condiments stocked'],
+  milk_whole: ['Milk Station','Whole milk'],
+  milk_2pct: ['Milk Station','2% milk'],
+  milk_fatfree: ['Milk Station','Fat-free milk'],
+  milk_almond: ['Milk Station','Almond milk'],
+  nes_flavors: ['Nespresso','All flavors'],
+  nes_lastcase: ['Nespresso','Last case alert'],
+  nes_func: ['Nespresso','Functioning'],
+  tea_stocked: ['Tea Station','Fully stocked'],
+  water_cups: ['Water Cooler','Cups stocked'],
+  water_func: ['Water Cooler','Functioning'],
+  resto_labels: ['Restaurant Items','Labels accurate'],
+  resto_exp: ['Restaurant Items','Expiry verified'],
+  resto_mold: ['Restaurant Items','No mold'],
+  market_exp: ['Micro Market','Expiry verified'],
+  market_stocked: ['Micro Market','Fully stocked'],
+};
+
+function issueCount(a) {
+  return Object.keys(ISSUE_MAP).filter(k => a[k] === false).length;
+}
+
+function getIssues(a) {
+  return Object.keys(ISSUE_MAP).filter(k => a[k] === false).map(k => ({
+    key: k, section: ISSUE_MAP[k][0], label: ISSUE_MAP[k][1]
+  }));
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  const [y, m, day] = d.split('-');
+  return new Date(y, m-1, day).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function fmtShort(d) {
+  if (!d) return '—';
+  const [y, m, day] = d.split('-');
+  return new Date(y, m-1, day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function daysAgo(d) {
+  if (!d) return '';
+  const [y, m, day] = d.split('-');
+  const diff = Math.floor((Date.now() - new Date(y, m-1, day)) / 86400000);
+  if (diff === 0) return 'Today';
+  if (diff === 1) return 'Yesterday';
+  return diff + ' days ago';
+}
+
+let allAudits = [];
+let auditMap = {};
+let currentFilter = 'all';
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function getFiltered() {
+  const now = new Date();
+  if (currentFilter === 'week') {
+    const weekAgo = new Date(now - 7 * 86400000);
+    return allAudits.filter(a => a.startTime && new Date(a.startTime) >= weekAgo);
+  }
+  if (currentFilter === 'month') {
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    return allAudits.filter(a => a.startTime && new Date(a.startTime) >= monthStart);
+  }
+  return allAudits;
+}
+
+if (siteName) {
+  document.getElementById('heroTitle').innerHTML = siteName.replace(/([A-Z])/g, ' $1').trim() + ' <span>Dashboard</span>';
+  document.getElementById('heroSub').textContent = 'Pantry audit history powered by Orange by Fooda';
+  document.getElementById('headerLocation').textContent = siteName;
+
+  db.collection('audits')
+    .where('site', '==', siteName)
+    .orderBy('startTime', 'desc')
+    .onSnapshot(snap => {
+      allAudits = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      auditMap = Object.fromEntries(allAudits.map(a => [a.id, a]));
+      render();
+    }, err => {
+      // Fallback without orderBy if index missing
+      db.collection('audits').where('site', '==', siteName).onSnapshot(snap => {
+        allAudits = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => (b.startTime || '') > (a.startTime || '') ? 1 : -1);
+        auditMap = Object.fromEntries(allAudits.map(a => [a.id, a]));
+        render();
+      });
+    });
+}
+
+function render() {
+  const filtered = getFiltered();
+  const total = filtered.length;
+  const cleared = filtered.filter(a => issueCount(a) === 0).length;
+  const pct = total ? Math.round(cleared / total * 100) : null;
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const thisMonth = allAudits.filter(a => a.startTime && new Date(a.startTime) >= monthStart).length;
+  const last = allAudits[0];
+  const periodLabel = currentFilter === 'week' ? 'This week' : currentFilter === 'month' ? 'This month' : 'All time';
+
+  // Stats
+  document.getElementById('statTotal').textContent = total || '—';
+  document.getElementById('statClear').textContent = pct !== null ? pct + '%' : '—';
+  document.getElementById('statClearSub').textContent = total ? cleared + ' of ' + total + ' all clear · ' + periodLabel : 'No audits yet';
+  document.getElementById('statMonth').textContent = thisMonth || '0';
+  document.getElementById('statLast').textContent = last ? fmtShort(last.date) : '—';
+  document.getElementById('statLastSub').textContent = last ? daysAgo(last.date) : '';
+
+  // Status banner — always based on most recent audit overall
+  const banner = document.getElementById('statusBanner');
+  if (!allAudits.length) {
+    banner.innerHTML = `<div class="status-banner no-data"><div class="status-icon">📋</div><div><div class="status-text-title">No audits recorded yet</div><div class="status-text-sub">Your pantry audit history will appear here once submitted.</div></div></div>`;
+  } else {
+    const lastIssues = issueCount(last);
+    if (lastIssues === 0) {
+      banner.innerHTML = `<div class="status-banner all-clear"><div class="status-icon">✅</div><div><div class="status-text-title">All clear on most recent audit</div><div class="status-text-sub">Audited ${fmtDate(last.date)} · No issues found</div></div></div>`;
+    } else {
+      banner.innerHTML = `<div class="status-banner has-issues"><div class="status-icon">⚠️</div><div><div class="status-text-title">${lastIssues} issue${lastIssues > 1 ? 's' : ''} flagged on most recent audit</div><div class="status-text-sub">Audited ${fmtDate(last.date)} · Your Fooda team is aware</div></div></div>`;
+    }
+  }
+
+  // Audit list
+  const list = document.getElementById('auditList');
+  document.getElementById('auditCount').textContent = total ? `(${total})` : '';
+
+  if (!total) {
+    list.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div>No audits found for ${periodLabel.toLowerCase()}</div></div>`;
+  } else {
+    list.innerHTML = filtered.slice(0, 15).map(a => {
+      const n = issueCount(a);
+      const badgeClass = n === 0 ? 'badge-clear' : n <= 2 ? 'badge-issues' : 'badge-red';
+      const badgeText = n === 0 ? '✓ All Clear' : `⚠ ${n} Issue${n > 1 ? 's' : ''}`;
+      return `<div class="audit-card" onclick="openModal('${a.id}')">
+        <div class="audit-card-left">
+          <div class="audit-date">${fmtDate(a.date)}</div>
+          <div class="audit-meta">
+            <span class="audit-meta-item">👤 ${a.completedBy || '—'}</span>
+            ${a.location ? `<span class="audit-meta-item">📍 ${a.location}</span>` : ''}
+            ${a.duration ? `<span class="audit-meta-item">⏱ ${a.duration}</span>` : ''}
+          </div>
+        </div>
+        <span class="audit-badge ${badgeClass}">${badgeText}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Issues section — from filtered audits
+  const recentIssues = [];
+  filtered.slice(0, 5).forEach(a => {
+    getIssues(a).forEach(issue => recentIssues.push({ ...issue, date: a.date, auditId: a.id }));
+  });
+
+  const issSection = document.getElementById('issuesSection');
+  const issuesPeriod = document.getElementById('issuesPeriod');
+  if (recentIssues.length > 0) {
+    issSection.style.display = '';
+    if (issuesPeriod) issuesPeriod.textContent = '· ' + periodLabel;
+    const grouped = {};
+    recentIssues.forEach(i => {
+      if (!grouped[i.section]) grouped[i.section] = [];
+      grouped[i.section].push(i);
+    });
+    document.getElementById('issuesList').innerHTML = Object.entries(grouped).map(([section, items]) =>
+      `<div class="issues-card">
+        <div class="issues-card-header">${section}</div>
+        ${items.map(i => `<div class="issue-row">
+          <div class="issue-dot"></div>
+          <div class="issue-text">${i.label}</div>
+          <div class="issue-section">${fmtShort(i.date)}</div>
+        </div>`).join('')}
+      </div>`
+    ).join('');
+  } else {
+    issSection.style.display = 'none';
+  }
+}
+
+function openModal(id) {
+  const a = auditMap[id]; if (!a) return;
+  document.getElementById('mTitle').textContent = fmtDate(a.date);
+  document.getElementById('mDate').textContent = (a.completedBy || '') + (a.location ? ' · ' + a.location : '') + (a.duration ? ' · ' + a.duration : '');
+
+  const checks = [
+    ['Coffee Machine', [['Has machine','coffee_has'],['Functioning','coffee_func']]],
+    ['Bevi Machine', [['Has machine','bevi_has'],['All flavors','bevi_flavors'],['CO2 full','bevi_co2'],['Functioning','bevi_func']]],
+    ['Pantry Supplies', [['Has supplies','pantry_has'],['Utensils','pantry_utensils'],['Napkins','pantry_napkins'],['Cups','pantry_cups'],['Plates','pantry_plates'],['Teas','pantry_teas'],['Condiments','pantry_condiments']]],
+    ['Milk Station', [['Has milk','milk_has'],['Whole','milk_whole'],['2%','milk_2pct'],['Fat-free','milk_fatfree'],['Almond','milk_almond']]],
+    ['Nespresso', [['Has machine','nes_has'],['All flavors','nes_flavors'],['Last case alert','nes_lastcase'],['Functioning','nes_func']]],
+    ['Tea Station', [['Has station','tea_has'],['Fully stocked','tea_stocked']]],
+    ['Water Cooler', [['Has cooler','water_has'],['Cups stocked','water_cups'],['Functioning','water_func']]],
+    ['Restaurant Items', [['Has items','resto_has'],['Labels accurate','resto_labels'],['Expiry verified','resto_exp'],['No mold','resto_mold']]],
+    ['Micro Market', [['Has market','market_has'],['Expiry verified','market_exp'],['Fully stocked','market_stocked']]],
+  ];
+
+  const secs = checks.map(([title, items]) => {
+    const rel = items.filter(([, k]) => a[k] !== undefined);
+    if (!rel.length) return '';
+    return `<div class="msec">
+      <div class="msec-title">${title}</div>
+      <div class="mgrid">
+        ${rel.map(([lbl, k]) => {
+          const v = a[k];
+          const cls = v === true ? 'green' : v === false ? 'red' : '';
+          return `<div class="mitem"><div class="mkey">${lbl}</div><div class="mval ${cls}">${v === true ? '✓ Yes' : v === false ? '✗ No' : 'N/A'}</div></div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  const photos = a.photos && a.photos.length
+    ? `<div class="msec"><div class="msec-title">Photos (${a.photos.length})</div><div style="display:flex;gap:8px;flex-wrap:wrap">${a.photos.map(p => `<a href="${p.data}" target="_blank"><img src="${p.data}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border)"></a>`).join('')}</div></div>`
+    : '';
+
+  document.getElementById('mBody').innerHTML = secs + photos;
+  document.getElementById('modalBg').classList.add('show');
+}
+</script>
+</body>
+</html>

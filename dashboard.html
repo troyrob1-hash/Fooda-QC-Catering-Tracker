@@ -1,0 +1,430 @@
+<!DOCTYPE html><!-- v2026-03-24 00:20:56 -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Orange by Fooda</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--orange:#E8513A;--orange-dark:#c93f29;--bg:#ffffff;--bg2:#f7f5f2;--bg3:#f0ece8;--border:#e4dfd9;--text:#1a1a1a;--text-muted:#888;--text-dim:#bbb;--green:#22c55e;--green-bg:rgba(34,197,94,.1);--red:#ef4444;--red-bg:rgba(239,68,68,.1);--yellow:#f59e0b}
+.nav-logo{display:flex;align-items:center;text-decoration:none}
+.logo-lockup{display:flex;flex-direction:column;line-height:1}
+.logo-orange{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:#E8513A;letter-spacing:-1px;text-transform:uppercase}
+.logo-byfooda{display:flex;align-items:center;gap:4px;margin-top:1px}
+.logo-by{font-size:10px;color:#888;letter-spacing:1px;text-transform:uppercase}
+.logo-tiles{display:inline-flex;gap:2px}
+.logo-tiles span{background:#E8513A;color:#000;font-family:'Playfair Display',serif;font-weight:700;font-size:9px;width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;border-radius:2px}
+.logo-div{width:1px;background:#333;height:28px;margin:0 12px}
+.logo-sub{font-size:11px;letter-spacing:2px;color:#888;text-transform:uppercase}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+select{outline:none!important;-webkit-tap-highlight-color:transparent}
+select:focus{outline:none!important;box-shadow:none!important}
+
+*{-webkit-tap-highlight-color:transparent}
+button,a{touch-action:manipulation}
+input,select,textarea{font-size:16px!important}
+
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+nav{background:#000;padding:0 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1a1a;position:sticky;top:0;z-index:200;height:68px}
+.nav-links{display:flex;align-items:center;list-style:none;margin-left:32px}
+.nav-links a{display:flex;align-items:center;padding:6px 14px;font-size:13px;font-weight:600;color:#ccc;text-decoration:none;border-radius:6px;transition:color .2s,background .2s}
+.nav-links a:hover{color:#fff;background:rgba(255,255,255,.08)}
+.nav-links a.active{color:#fff;background:rgba(232,81,58,.15);font-weight:700}
+.nav-signout{background:none;border:none;color:#ccc;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:6px 14px;cursor:pointer;border-radius:6px;transition:color .2s,background .2s}
+.nav-signout:hover{color:#fff;background:rgba(255,255,255,.08)}
+.nav-admin-btn{display:none;align-items:center;padding:0 18px;font-size:13px;font-weight:600;color:var(--orange);background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;font-family:'DM Sans',sans-serif;transition:border-color .2s}
+.nav-admin-btn.show{display:flex}
+
+
+
+
+
+.page{max-width:1100px;margin:0 auto;padding:44px 24px 80px}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:32px;flex-wrap:wrap}
+.page-title{font-family:'Playfair Display',serif;font-size:40px;font-weight:900;line-height:1.05}
+.page-title span{color:var(--orange)}
+.page-sub{font-size:14px;color:var(--text-muted);margin-top:5px}
+.btn-new{background:var(--orange);color:#fff;border:none;padding:12px 22px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn-new:hover{background:var(--orange-dark);transform:translateY(-1px)}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:36px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 22px}
+.stat-label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px}
+.stat-val{font-family:'Playfair Display',serif;font-size:36px;font-weight:900;color:var(--orange);line-height:1}
+.stat-hint{font-size:12px;color:var(--text-muted);margin-top:4px}
+.filters{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.filter-input{background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:8px 14px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;transition:border-color .2s;-webkit-appearance:none}
+.filter-input:focus{border-color:var(--orange)}
+.filter-input::placeholder{color:var(--text-dim)}
+.tbl-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.tbl-head{display:flex;align-items:center;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--bg3)}
+.th{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted)}
+.tbl-body{overflow-x:auto}
+.tbl-row{display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border);transition:background .15s;cursor:pointer}
+.tbl-row:last-child{border-bottom:none}
+.tbl-row:hover{background:var(--bg3)}
+.td{font-size:13px;color:var(--text)}
+.td-id{color:var(--orange);font-weight:700;font-size:14px}
+.td-muted{color:var(--text-muted)}
+.c-id{width:110px;flex-shrink:0}.c-date{width:100px;flex-shrink:0}.c-site{flex:1;min-width:120px}.c-loc{width:130px;flex-shrink:0}.c-by{width:140px;flex-shrink:0}.c-dur{width:90px;flex-shrink:0;text-align:center}.c-stat{width:120px;flex-shrink:0}.c-img{width:80px;flex-shrink:0;text-align:center}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.b-green{background:var(--green-bg);color:var(--green);border:1px solid rgba(34,197,94,.25)}
+.b-yellow{background:rgba(245,158,11,.1);color:var(--yellow);border:1px solid rgba(245,158,11,.25)}
+.b-red{background:var(--red-bg);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.photo-thumb{width:44px;height:44px;border-radius:7px;object-fit:cover;border:1px solid var(--border)}
+.photo-placeholder{width:44px;height:44px;border-radius:7px;background:var(--bg3);border:1px dashed var(--text-dim);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--text-dim)}
+.empty{padding:60px 20px;text-align:center;color:var(--text-muted)}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.empty-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:6px}
+.empty-sub{font-size:14px;margin-bottom:24px}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;align-items:center;justify-content:center;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:var(--bg2);border-radius:16px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-hdr{padding:24px 24px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border)}
+.modal-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700}
+.modal-id{color:var(--orange)}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-muted);padding:4px;border-radius:6px}
+.modal-close:hover{background:var(--bg3)}
+.modal-body{padding:20px 24px}
+.msec{margin-bottom:18px}
+.msec-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mitem{background:var(--bg3);border-radius:8px;padding:10px 14px}
+.mkey{font-size:11px;color:var(--text-muted);margin-bottom:3px}
+.mval{font-size:14px;font-weight:600}
+.mval.green{color:var(--green)}.mval.red{color:var(--red)}.mval.na{color:var(--text-dim);font-weight:400;font-style:italic}
+@media(max-width:900px){.stats-row{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){nav{padding:0 16px}.page{padding:24px 16px 60px}.stats-row{grid-template-columns:1fr 1fr}.c-loc,.c-dur{display:none}}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<nav>
+    <a class="nav-logo" href="home.html">
+    <div class="logo-lockup">
+      <div class="logo-orange">ORANGE</div>
+      <div class="logo-byfooda">
+        <span class="logo-by">by</span>
+        <div class="logo-tiles"><span>f</span><span>o</span><span>o</span><span>d</span><span>a</span></div>
+      </div>
+    </div>
+    <div class="logo-div"></div>
+    <div class="logo-sub">Operations Hub</div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="pantry.html">New Entry</a></li>
+    <li><a href="dashboard.html" class="active">Records</a></li>
+    <li><a href="analytics.html">Analytics</a></li>
+    <li><button class="nav-admin-btn" id="navAdminBtn" onclick="window.location.href='pantry.html'">⚙ Admin</button></li>
+  </ul>
+</nav>
+
+<div class="page">
+  <div class="page-hdr">
+    <div>
+      <div class="page-title" id="pageTitle">Audit <span>Records</span></div>
+      <div class="page-sub" id="pageSub">All logged pantry checklist submissions</div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <!-- Form type toggle -->
+      <div style="display:flex;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:4px;gap:4px">
+        <button id="togglePantry" onclick="switchType('pantry')" style="padding:7px 16px;border-radius:6px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;background:var(--orange);color:#fff;transition:all .2s">🧺 Pantry</button>
+        <button id="toggleCatering" onclick="switchType('catering')" style="padding:7px 16px;border-radius:6px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;background:none;color:var(--text-muted);transition:all .2s">🍽 Catering</button>
+      </div>
+      <a href="pantry.html" class="btn-new" id="btnNew">+ New Checklist</a>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Total</div><div class="stat-val" id="statTotal">—</div><div class="stat-hint">All time</div></div>
+    <div class="stat-card"><div class="stat-label">This Week</div><div class="stat-val" id="statWeek">—</div><div class="stat-hint">Last 7 days</div></div>
+    <div class="stat-card"><div class="stat-label" id="statLabel3">Active Auditors</div><div class="stat-val" id="statAuditors">—</div><div class="stat-hint" id="statHint3">Unique staff</div></div>
+    <div class="stat-card"><div class="stat-label" id="statLabel4">Locations</div><div class="stat-val" id="statLocations">—</div><div class="stat-hint" id="statHint4">Unique sites</div></div>
+  </div>
+  <div class="filters">
+    <input type="text" id="filterSearch" class="filter-input" placeholder="Search site, auditor, location..." style="flex:1;min-width:200px" oninput="renderTable()">
+    <select id="filterRegion" class="filter-input" onchange="onDashRegionChange()"><option value="">All Regions</option><option value="Alex Oetken">Alex Oetken</option><option value="Jen Trost">Jen Trost</option><option value="Krys Russo">Krys Russo</option><option value="Paul Baerenstecher">Paul Baerenstecher</option><option value="Troy Robinson">Troy Robinson</option></select>
+    <select id="filterLocation" class="filter-input" onchange="renderTable()" style="min-width:160px"><option value="">All Locations</option></select>
+    <select id="filterAuditor" class="filter-input" onchange="renderTable()"><option value="">All Auditors</option></select>
+    <select id="filterDate" class="filter-input" onchange="renderTable()"><option value="">All Time</option><option value="today">Today</option><option value="week">This Week</option><option value="month">This Month</option></select>
+  </div>
+  <div class="tbl-wrap">
+    <div class="tbl-head" id="pantryHead">
+      <div class="th c-id">Audit ID</div><div class="th c-date">Date</div><div class="th c-site">Site Name</div><div class="th c-loc">Location</div><div class="th c-by">Completed By</div><div class="th c-dur">Duration</div><div class="th c-stat">Status</div><div class="th c-img">Photo</div>
+    </div>
+    <div class="tbl-head" id="cateringHead" style="display:none">
+      <div class="th" style="width:110px;flex-shrink:0">BEO #</div>
+      <div class="th" style="width:95px;flex-shrink:0">Date</div>
+      <div class="th" style="flex:1">Building</div>
+      <div class="th" style="width:140px;flex-shrink:0">Driver</div>
+      <div class="th" style="width:100px;flex-shrink:0">Scheduled</div>
+      <div class="th" style="width:100px;flex-shrink:0">Actual</div>
+      <div class="th" style="width:110px;flex-shrink:0">Status</div>
+      <div class="th" style="width:60px;flex-shrink:0">Photo</div>
+    </div>
+    <div class="tbl-body" id="tableBody"><div class="empty"><div class="empty-icon">📋</div><div class="empty-title">Loading…</div></div></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-hdr"><div><div class="modal-title">Audit <span class="modal-id" id="mId"></span></div><div style="font-size:13px;color:var(--text-muted);margin-top:3px" id="mMeta"></div></div><button class="modal-close" onclick="document.getElementById('modalBg').classList.remove('show')">✕</button></div>
+    <div class="modal-body" id="mBody"></div>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCGTcu2VJQw8vP1hGF6uRuN8dCcs38zQRg",
+  projectId: "pantry-checklist",
+  storageBucket: "pantry-checklist.firebasestorage.app",
+  messagingSenderId: "564968122984",
+  appId: "1:564968122984:web:0140076461fab13c7b69dd"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+var ALL_LOCATIONS_REGION = {
+  "1200 Enclave":"Paul Baerenstecher","1540Broadway":"Krys Russo","200 Wood":"Krys Russo",
+  "30IA":"Alex Oetken","330 Kilbourn":"Krys Russo","330 N Wabash Chicago":"Krys Russo",
+  "7700 Parmer":"Paul Baerenstecher","800 Brand":"Jen Trost","BCH Needham":"Alex Oetken",
+  "Berkeley Cafeteria":"Troy Robinson","Best Buy":"Alex Oetken","Broadmoor":"Paul Baerenstecher",
+  "CCC":"Krys Russo","CityWest":"Paul Baerenstecher","Credit Human":"Paul Baerenstecher",
+  "Discover Riverwoods":"Krys Russo","Discover Whitehall":"Krys Russo","EIP Cafe":"Alex Oetken",
+  "Elevance Health":"Alex Oetken","Elevance Health Atlanta":"Alex Oetken",
+  "Elevance Health Corporate HQ":"Alex Oetken","Exxon Baytown":"Paul Baerenstecher",
+  "FMI":"Krys Russo","Four Oaks Place":"Paul Baerenstecher","Georgia Power":"Alex Oetken",
+  "JPMC":"Troy Robinson","Levi's":"Troy Robinson","Lumen Denver":"Jen Trost",
+  "Marathon Oil":"Paul Baerenstecher","Medical City Dallas":"Paul Baerenstecher",
+  "NetApp":"Alex Oetken","Netpark Tampa":"Alex Oetken","Northern Trust":"Krys Russo",
+  "NorthPark":"Alex Oetken","Oncor":"Paul Baerenstecher","Paramount NYC":"Krys Russo",
+  "Phillips 66":"Paul Baerenstecher","Plaza at Enclave":"Paul Baerenstecher",
+  "QualcommBoulder":"Troy Robinson","QualcommSanDiego":"Troy Robinson",
+  "QualcommSantaClara":"Troy Robinson","Royal Philips Cambridge":"Krys Russo",
+  "Rush":"Krys Russo","Sally Beauty":"Paul Baerenstecher","So CA Gas":"Jen Trost",
+  "Southwest Airlines":"Paul Baerenstecher","Switching Stations":"Krys Russo",
+  "TBK Bank":"Paul Baerenstecher","Times Square Tower":"Krys Russo","TMC":"Alex Oetken",
+  "TMobile":"Paul Baerenstecher","Triangle Plaza":"Krys Russo","Trive":"Paul Baerenstecher",
+  "ULA":"Jen Trost","Vans OC":"Jen Trost","Vantive HQ":"Krys Russo",
+  "VF Corporation":"Jen Trost","VF Greensboro":"Jen Trost","Weatherford":"Paul Baerenstecher",
+  "Wesley Medical KS":"Jen Trost","West Memorial":"Paul Baerenstecher",
+  "Workplace Convenience Services":"Alex Oetken"
+};
+
+function getLocationsByRegion(regionF) {
+  return Object.entries(ALL_LOCATIONS_REGION)
+    .filter(([loc, reg]) => !regionF || reg === regionF)
+    .map(([loc]) => loc)
+    .sort();
+}
+
+let pantryAudits   = [];
+let cateringAudits = [];
+let auditMap       = {};
+let currentType    = 'pantry';
+
+// ── CLIENT VIEW ──────────────────────────────────────────────
+const urlParams      = new URLSearchParams(window.location.search);
+const clientLocation = urlParams.get('location') ? decodeURIComponent(urlParams.get('location')) : null;
+if (clientLocation) {
+  document.querySelector('.nav-links').style.display = 'none';
+  document.querySelector('.filters').style.display   = 'none';
+  document.getElementById('btnNew').style.display    = 'none';
+  document.getElementById('togglePantry').parentElement.style.display = 'none';
+  document.getElementById('pageTitle').innerHTML = '<span>'+clientLocation+'</span>';
+  document.getElementById('pageSub').textContent = 'Pantry audit history for your location';
+}
+
+// ── TYPE SWITCH ───────────────────────────────────────────────
+function switchType(type) {
+  currentType = type;
+  const isPantry = type === 'pantry';
+  document.getElementById('togglePantry').style.background   = isPantry ? 'var(--orange)' : 'none';
+  document.getElementById('togglePantry').style.color        = isPantry ? '#fff' : 'var(--text-muted)';
+  document.getElementById('toggleCatering').style.background = !isPantry ? 'var(--orange)' : 'none';
+  document.getElementById('toggleCatering').style.color      = !isPantry ? '#fff' : 'var(--text-muted)';
+  document.getElementById('pantryHead').style.display    = isPantry ? '' : 'none';
+  document.getElementById('cateringHead').style.display  = isPantry ? 'none' : '';
+  document.getElementById('pageTitle').innerHTML = isPantry ? 'Audit <span>Records</span>' : 'Catering <span>Drop-Offs</span>';
+  document.getElementById('pageSub').textContent = isPantry ? 'All logged pantry checklist submissions' : 'All logged catering drop-off records';
+  document.getElementById('btnNew').href        = isPantry ? 'pantry.html' : 'catering.html';
+  document.getElementById('btnNew').textContent = isPantry ? '+ New Checklist' : '+ Log Drop-Off';
+  document.getElementById('statLabel3').textContent = isPantry ? 'Active Auditors' : 'On-Time Rate';
+  document.getElementById('statLabel4').textContent = isPantry ? 'Locations' : 'Buildings';
+  // Reset filters on type switch
+  if(document.getElementById('filterRegion'))  document.getElementById('filterRegion').value='';
+  if(document.getElementById('filterLocation'))document.getElementById('filterLocation').value='';
+  renderStats(); renderFilters(); renderTable();
+}
+
+// ── LOAD DATA ─────────────────────────────────────────────────
+function loadData() {
+  db.collection('audits').orderBy('startTime','desc').onSnapshot(snap => {
+    pantryAudits = snap.docs.map(d => ({id:d.id,...d.data()}));
+    if (currentType === 'pantry') { renderStats(); renderFilters(); renderTable(); }
+  });
+  db.collection('catering').orderBy('timestamp','desc').onSnapshot(snap => {
+    cateringAudits = snap.docs.map(d => ({id:d.id,...d.data()}));
+    if (currentType === 'catering') { renderStats(); renderFilters(); renderTable(); }
+  }, err => console.warn('Catering:', err.message));
+}
+loadData();
+
+// ── HELPERS ───────────────────────────────────────────────────
+const ISSUE_KEYS = ['coffee_func','bevi_flavors','bevi_co2','bevi_func','pantry_utensils','pantry_napkins','pantry_cups','pantry_plates','pantry_teas','pantry_condiments','milk_whole','milk_2pct','milk_fatfree','milk_almond','nes_flavors','nes_lastcase','nes_func','tea_stocked','water_cups','water_func','resto_labels','resto_exp','resto_mold','market_exp','market_stocked'];
+function issueCount(a){ return ISSUE_KEYS.filter(k=>a[k]===false).length; }
+function statusBadge(a){ const n=issueCount(a); if(n===0)return'<span class="badge b-green">✓ All Clear</span>'; if(n<=2)return`<span class="badge b-yellow">⚠ ${n} Issue${n>1?'s':''}</span>`; return`<span class="badge b-red">✗ ${n} Issues</span>`; }
+function onTimeBadge(r){ return r.onTime?'<span class="badge b-green">✓ On Time</span>':"<span class=\"badge b-red\">✗ Late</span>"; }
+function fmtDate(d){ if(!d)return'—'; const p=d.split('-'); return`${p[1]}/${p[2]}/${p[0]}`; }
+function fmtTime(iso){ return iso?new Date(iso).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true}):'—'; }
+function fmtClock(t){ if(!t||t==='—')return'—'; const[h,m]=t.split(':'),hr=parseInt(h),ap=hr>=12?'PM':'AM'; return`${hr%12||12}:${m} ${ap}`; }
+function trunc(s,n=18){ return s&&s.length>n?s.slice(0,n)+'…':(s||'—'); }
+function getSource(){ const data=currentType==='pantry'?pantryAudits:cateringAudits; return clientLocation?data.filter(a=>(a.site||a.client)===clientLocation):data; }
+
+
+function populateDashLocationFilter() {
+  const regionF = document.getElementById('filterRegion')?.value || '';
+  const sel = document.getElementById('filterLocation');
+  if (!sel) return;
+  const cur = sel.value;
+  const locs = getLocationsByRegion(regionF);
+  sel.innerHTML = '<option value="">All Locations</option>' +
+    locs.map(l=>`<option value="${l}" ${l===cur?'selected':''}>${l}</option>`).join('');
+}
+
+function onDashRegionChange() {
+  populateDashLocationFilter();
+  document.getElementById('filterLocation').value = '';
+  renderTable();
+}
+
+function renderStats() {
+  const data=getSource(), now=new Date(), weekAgo=new Date(now-7*86400000);
+  document.getElementById('statTotal').textContent=data.length;
+  document.getElementById('statWeek').textContent=data.filter(a=>new Date(a.startTime||a.date+'T00:00:00')>weekAgo).length;
+  if (currentType==='pantry') {
+    document.getElementById('statAuditors').textContent=new Set(data.map(a=>a.completedBy)).size;
+    document.getElementById('statLocations').textContent=clientLocation?'1':new Set(data.map(a=>a.site+'|'+a.location)).size;
+    document.getElementById('statLabel3').textContent='Active Auditors';
+    document.getElementById('statLabel4').textContent='Locations';
+  } else {
+    const onTime=data.filter(r=>r.onTime===true).length;
+    document.getElementById('statAuditors').textContent=data.length?Math.round(onTime/data.length*100)+'%':'—';
+    document.getElementById('statLocations').textContent=new Set(data.map(a=>a.client)).size;
+    document.getElementById('statLabel3').textContent='On-Time Rate';
+    document.getElementById('statLabel4').textContent='Buildings';
+  }
+}
+
+function renderFilters() {
+  if (clientLocation) return;
+  const field = currentType==='pantry'?'completedBy':'driver';
+  const label = currentType==='pantry'?'All Auditors':'All Drivers';
+  const source = currentType==='pantry'?pantryAudits:cateringAudits;
+  const auds=[...new Set(source.map(a=>a[field]).filter(Boolean))].sort();
+  const sel=document.getElementById('filterAuditor'), cur=sel.value;
+  sel.innerHTML=`<option value="">${label}</option>`+auds.map(n=>`<option value="${n}" ${n===cur?'selected':''}>`+n+'</option>').join('');
+}
+
+function renderTable() {
+  const source=getSource();
+  const search  =document.getElementById('filterSearch').value.toLowerCase();
+  const auditor =document.getElementById('filterAuditor').value;
+  const dateF   =document.getElementById('filterDate').value;
+  const regionF  =document.getElementById('filterRegion')?.value||'';
+  const locationF=document.getElementById('filterLocation')?.value||'';
+  populateDashLocationFilter();
+  const now=new Date(),today=now.toISOString().split('T')[0],weekAgo=new Date(now-7*86400000),monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+  const rows=source.filter(a=>{
+    const s=currentType==='pantry'?`${a.site} ${a.completedBy} ${a.location}`:`${a.client} ${a.driver} ${a.beo}`;
+    if(search&&!s.toLowerCase().includes(search))return false;
+    const n=currentType==='pantry'?a.completedBy:a.driver;
+    if(auditor&&n!==auditor)return false;
+    if(regionF&&(a.region||'')!==regionF)return false;
+    const siteF=currentType==='pantry'?a.site:a.client;
+    if(locationF&&siteF!==locationF)return false;
+    const ts=new Date(a.startTime||a.date+'T00:00:00');
+    if(dateF==='today'&&a.date!==today)return false;
+    if(dateF==='week'&&ts<weekAgo)return false;
+    if(dateF==='month'&&ts<monthStart)return false;
+    return true;
+  });
+  auditMap=Object.fromEntries(rows.map(a=>[a.id,a]));
+  const body=document.getElementById('tableBody');
+  if(!rows.length){body.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">No results</div></div>';return;}
+  if(currentType==='pantry'){
+    body.innerHTML=rows.map(a=>{
+      const thumb=a.photos&&a.photos.length?`<img src="${a.photos[0].data}" class="photo-thumb">`:"<div class=\"photo-placeholder\">📷</div>";
+      return`<div class="tbl-row" onclick="openModal('${a.id}')">
+        <div class="td td-id c-id">#${a.id.slice(-6)}</div>
+        <div class="td td-muted c-date">${fmtDate(a.date)}</div>
+        <div class="td c-site">${trunc(a.site,22)}</div>
+        <div class="td td-muted c-loc">${trunc(a.location,16)}</div>
+        <div class="td c-by">${trunc(a.completedBy,18)}</div>
+        <div class="td td-muted c-dur" style="text-align:center">${a.duration||'—'}</div>
+        <div class="td c-stat">${statusBadge(a)}</div>
+        <div class="td c-img" style="display:flex;justify-content:center">${thumb}</div>
+      </div>`;
+    }).join('');
+  } else {
+    body.innerHTML=rows.map(r=>{
+      const thumb=r.photo?`<img src="${r.photo}" class="photo-thumb">`:"<div class=\"photo-placeholder\">📷</div>";
+      return`<div class="tbl-row" onclick="openCateringModal('${r.id}')">
+        <div class="td td-id" style="width:110px;flex-shrink:0">${r.beo||'—'}</div>
+        <div class="td td-muted" style="width:95px;flex-shrink:0">${fmtDate(r.date)}</div>
+        <div class="td" style="flex:1">${trunc(r.client,24)}</div>
+        <div class="td" style="width:140px;flex-shrink:0">${trunc(r.driver,18)}</div>
+        <div class="td td-muted" style="width:100px;flex-shrink:0">${fmtClock(r.scheduledTime)}</div>
+        <div class="td td-muted" style="width:100px;flex-shrink:0">${fmtClock(r.actualTime)}</div>
+        <div class="td" style="width:110px;flex-shrink:0">${onTimeBadge(r)}</div>
+        <div class="td" style="width:60px;flex-shrink:0;display:flex;justify-content:center">${thumb}</div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function openModal(id){
+  const a=auditMap[id];if(!a)return;
+  document.getElementById('mId').textContent='#'+id.slice(-6);
+  document.getElementById('mMeta').textContent=`${a.site} · ${a.location} · ${a.date}`;
+  const checks=[['Coffee Machine',[['Has machine','coffee_has'],['Functioning','coffee_func']]],['Bevi Machine',[['Has machine','bevi_has'],['All flavors','bevi_flavors'],['CO2 full','bevi_co2'],['Functioning','bevi_func']]],['Pantry Supplies',[['Has supplies','pantry_has'],['Utensils','pantry_utensils'],['Napkins','pantry_napkins'],['Cups','pantry_cups'],['Plates','pantry_plates'],['Teas','pantry_teas'],['Condiments','pantry_condiments']]],['Milk',[['Has milk','milk_has'],['Whole','milk_whole'],['2%','milk_2pct'],['Fat-free','milk_fatfree'],['Almond','milk_almond']]],['Nespresso',[['Has machine','nes_has'],['All flavors','nes_flavors'],['Last case','nes_lastcase'],['Functioning','nes_func']]],['Tea Station',[['Has station','tea_has'],['Fully stocked','tea_stocked']]],['Water Cooler',[['Has cooler','water_has'],['Cups stocked','water_cups'],['Functioning','water_func']]],['Restaurant Items',[['Has items','resto_has'],['Labels accurate','resto_labels'],['Exp verified','resto_exp'],['No mold','resto_mold']]],['Micro Market',[['Has market','market_has'],['Exp verified','market_exp'],['Fully stocked','market_stocked']]]];
+  const info=`<div class="msec"><div class="msec-title">Audit Info</div><div class="mgrid">${[['Completed By',a.completedBy],['Site',a.site],['Location',a.location],['Region',a.region||'—'],['Date',a.date],['Started',fmtTime(a.startTime)],['Submitted',fmtTime(a.endTime)],['Duration',a.duration||'—']].map(([k,v])=>`<div class="mitem"><div class="mkey">${k}</div><div class="mval">${v||'—'}</div></div>`).join('')}</div></div>`;
+  const secs=checks.map(([title,items])=>{const rel=items.filter(([,k])=>a[k]!==undefined);if(!rel.length)return'';return`<div class="msec"><div class="msec-title">${title}</div><div class="mgrid">${rel.map(([lbl,k])=>{const v=a[k];const cls=v===true?'green':v===false?'red':'na';return`<div class="mitem"><div class="mkey">${lbl}</div><div class="mval ${cls}">${v===true?'✓ Yes':v===false?'✗ No':'N/A'}</div></div>`;}).join('')}</div></div>`;}).join('');
+  const photos=a.photos&&a.photos.length?`<div class="msec"><div class="msec-title">Photos (${a.photos.length})</div><div style="display:flex;gap:8px;flex-wrap:wrap">${a.photos.map(p=>`<a href="${p.data}" target="_blank" download="${p.name}"><img src="${p.data}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border)"></a>`).join('')}</div></div>`:`<div class="msec"><div class="msec-title">Photos</div><div style="background:var(--bg3);border:2px dashed var(--text-dim);border-radius:10px;padding:28px;text-align:center;color:var(--text-muted);font-size:13px">📷 No photos attached</div></div>`;
+  document.getElementById('mBody').innerHTML=info+secs+photos;
+  // Show delete button if pantry admin mode is on (set via pantry.html)
+  const deleteBtn = `<div style="padding:0 0 8px"><button onclick="deletePantryRecord('${id}')" style="width:100%;padding:12px;background:var(--red-bg);border:1px solid rgba(239,68,68,.3);border-radius:8px;color:var(--red);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s" onmouseover="this.style.background='var(--red)';this.style.color='#fff'" onmouseout="this.style.background='var(--red-bg)';this.style.color='var(--red)'">🗑 Delete This Audit</button></div>`;
+  if (sessionStorage.getItem('pantryAdminMode') === 'true') {
+    document.getElementById('mBody').innerHTML = deleteBtn + info + secs + photos;
+  }
+  document.getElementById('modalBg').classList.add('show');
+}
+
+function openCateringModal(id){
+  const r=auditMap[id];if(!r)return;
+  document.getElementById('mId').textContent=r.beo||'#'+id.slice(-6);
+  document.getElementById('mMeta').textContent=`${r.client} · ${fmtDate(r.date)}`;
+  document.getElementById('mBody').innerHTML=`
+    <div class="msec"><div class="msec-title">Drop-Off Details</div><div class="mgrid">
+      ${[['BEO Number',r.beo],['Building',r.client],['Location',r.location||'—'],['Date',fmtDate(r.date)],['Driver',r.driver],['Scheduled',fmtClock(r.scheduledTime)],['Actual',fmtClock(r.actualTime)],['On Time',r.onTime?'✓ Yes':'✗ Late'],['Notes',r.notes||'—']]
+        .map(([k,v])=>`<div class="mitem"><div class="mkey">${k}</div><div class="mval ${k==='On Time'?(r.onTime?'green':'red'):''}">${v||'—'}</div></div>`).join('')}
+    </div></div>
+    ${r.photo?`<div class="msec"><div class="msec-title">Photo</div><a href="${r.photo}" target="_blank"><img src="${r.photo}" style="width:100%;max-width:400px;border-radius:10px;border:1px solid var(--border)"></a></div>`:''}
+  `;
+  document.getElementById('modalBg').classList.add('show');
+}
+
+populateDashLocationFilter();
+
+function closeModal(e){ if(e.target===document.getElementById('modalBg'))document.getElementById('modalBg').classList.remove('show'); }
+
+async function deletePantryRecord(id) {
+  if (!confirm('Delete this audit permanently? This cannot be undone.')) return;
+  try {
+    await db.collection('audits').doc(id).delete();
+    document.getElementById('modalBg').classList.remove('show');
+  } catch(e) { alert('Error deleting: ' + e.message); }
+}
+
+</script>
+</body>
+</html>

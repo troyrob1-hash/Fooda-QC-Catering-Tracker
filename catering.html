@@ -1,0 +1,2151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catering Drop-Off Tracker — Orange by Fooda</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+  :root {
+    --orange: #E8533A;
+    --orange-light: #F07860;
+    --orange-dark: #C03D26;
+    --orange-pale: #FAECE7;
+    --black: #1A1A1A;
+    --black-surface: #FFFFFF;
+    --black-card: #FFFFFF;
+    --black-border: #E5E2DC;
+    --black-hover: #F7F5F2;
+    --white: #1A1A1A;
+    --white-muted: #4A4744;
+    --white-dim: #8A8780;
+    --green: #2A9E62;
+    --red: #D03A39;
+    --amber: #C97C10;
+  }
+
+  /* Mobile touch optimizations */
+  * { -webkit-tap-highlight-color: transparent; }
+  button, .tab-btn, .ontime-btn, .filter-btn, .submit-btn {
+    touch-action: manipulation; /* faster tap response */
+  }
+  input, select, textarea { font-size: 16px; } /* prevents iOS zoom */
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #f7f5f2;
+    color: #1a1a1a;
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* HEADER */
+  header {
+    background: #000000;
+    border-bottom: 1px solid #1a1a1a;
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 68px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo-container {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .logo-orange {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--orange);
+    letter-spacing: -1px;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .logo-by {
+    font-size: 10px;
+    color: #888;
+    letter-spacing: 1px;
+    font-weight: 400;
+    text-transform: uppercase;
+  }
+
+  .logo-fooda {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+  }
+
+  .logo-fooda-letter {
+    background: var(--orange);
+    color: #000;
+    width: 14px;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    font-family: 'Playfair Display', sans-serif;
+    border-radius: 2px;
+  }
+
+  /* NAV TABS */
+  nav {
+    display: flex;
+    gap: 4px;
+  }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: #888;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 0 18px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: color .2s, border-color .2s;
+  }
+
+  .tab-btn:hover {
+    color: #fff;
+  }
+
+  .tab-btn.active {
+    color: #fff;
+    border-bottom-color: var(--orange);
+    font-weight: 700;
+  }
+
+  /* MAIN */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 40px;
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* PAGE HEADER */
+  .page-header {
+    margin-bottom: 40px;
+  }
+
+  .page-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    font-weight: 900;
+    color: var(--white);
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+
+  .page-header h1 span { color: var(--orange); }
+
+  .page-header p {
+    color: var(--white-dim);
+    font-size: 15px;
+    font-weight: 400;
+  }
+
+  /* FORM CARD */
+  .form-card {
+    background: #ffffff;
+    border: 1px solid #e4dfd9;
+    border-radius: 14px;
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+
+  .form-card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 28px;
+    color: var(--white);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .form-group.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--white-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  input[type="text"],
+  input[type="time"],
+  input[type="date"],
+  select,
+  textarea {
+    background: #F7F5F2;
+    border: 1px solid var(--black-border);
+    border-radius: 8px;
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 12px 16px;
+    transition: border-color 0.2s;
+    outline: none;
+    width: 100%;
+  }
+
+  input[type="text"]:focus,
+  input[type="time"]:focus,
+  input[type="date"]:focus,
+  select:focus,
+  textarea:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(232,83,58,.1);
+  }
+
+  select.client-select {
+    width: 100%;
+    background: #fff;
+    border: 1px solid var(--black-border);
+    border-radius: 10px;
+    padding: 13px 16px;
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--black);
+    outline: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+  }
+  select.client-select:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(232,81,58,.1);
+  }
+
+    select option {
+    background: #FFFFFF;
+  }
+
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* ON TIME TOGGLE */
+  .ontime-group {
+    display: flex;
+    gap: 12px;
+  }
+
+  .ontime-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--black-border);
+    background: var(--black-surface);
+    color: var(--white-dim);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .ontime-btn:hover { border-color: var(--white-dim); color: var(--white); }
+
+  .ontime-btn.selected-yes {
+    background: rgba(61, 184, 122, 0.12);
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .ontime-btn.selected-no {
+    background: rgba(226, 75, 74, 0.12);
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  /* PHOTO UPLOAD */
+  .upload-zone {
+    border: 1.5px dashed var(--black-border);
+    border-radius: 8px;
+    padding: 28px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #F7F5F2;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone:hover { border-color: var(--orange); }
+
+  .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+  .upload-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #E5E2DC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+  }
+
+  .upload-icon svg { color: var(--orange); }
+
+  .upload-zone p { color: var(--white-dim); font-size: 13px; }
+  .upload-zone strong { color: var(--orange); }
+
+  .upload-preview {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(232, 83, 58, 0.08);
+    border: 1px solid rgba(232, 83, 58, 0.3);
+    border-radius: 8px;
+    margin-top: 12px;
+  }
+
+  .upload-preview.visible { display: flex; }
+
+  .upload-preview img {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+
+  .upload-preview span { font-size: 13px; color: var(--white-muted); flex: 1; }
+
+  /* SUBMIT BTN */
+  .submit-btn {
+    width: 100%;
+    padding: 15px;
+    background: var(--orange);
+    color: var(--black);
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 24px;
+  }
+
+  .submit-btn:hover { background: var(--orange-light); }
+  .submit-btn:active { transform: scale(0.99); }
+
+  /* SUCCESS TOAST */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: #FFFFFF;
+    border: 1px solid var(--green);
+    border-radius: 12px;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--white);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 999;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* RECORDS TABLE */
+  .records-section h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--white);
+  }
+
+  .records-table-wrap {
+    background: var(--black-card);
+    border: 1px solid var(--black-border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .records-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .records-table th {
+    background: #F7F5F2;
+    padding: 14px 18px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--white-dim);
+    border-bottom: 1px solid var(--black-border);
+  }
+
+  .records-table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--black-border);
+    color: var(--white-muted);
+    vertical-align: middle;
+  }
+
+  .records-table tr:last-child td { border-bottom: none; }
+
+  .records-table tr:hover td { background: var(--black-hover); }
+
+  .beo-chip {
+    font-family: 'DM Sans', monospace;
+    font-weight: 600;
+    color: var(--orange);
+    font-size: 13px;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+
+  .pill-on-time {
+    background: rgba(61, 184, 122, 0.12);
+    color: var(--green);
+  }
+
+  .pill-late {
+    background: rgba(226, 75, 74, 0.12);
+    color: var(--red);
+  }
+
+  .photo-thumb {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    object-fit: cover;
+    cursor: pointer;
+    border: 1px solid var(--black-border);
+    transition: transform 0.2s;
+  }
+
+  .photo-thumb:hover { transform: scale(1.1); }
+
+  .no-photo {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    background: #E5E2DC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .no-photo svg { opacity: 0.3; }
+
+  .empty-state {
+    padding: 60px 20px;
+    text-align: center;
+  }
+
+  .empty-state p { color: var(--white-dim); font-size: 14px; }
+
+  /* ANALYTICS TAB */
+  .analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .metric-card {
+    background: var(--black-card);
+    border: 1px solid var(--black-border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .metric-card.accent-orange { border-color: rgba(232, 83, 58, 0.4); }
+  .metric-card.accent-green { border-color: rgba(61, 184, 122, 0.3); }
+  .metric-card.accent-red { border-color: rgba(226, 75, 74, 0.3); }
+  .metric-card.accent-amber { border-color: rgba(239, 159, 39, 0.3); }
+
+  .metric-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--white-dim);
+    margin-bottom: 10px;
+  }
+
+  .metric-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .metric-value.orange { color: var(--orange); }
+  .metric-value.green { color: var(--green); }
+  .metric-value.red { color: var(--red); }
+  .metric-value.amber { color: var(--amber); }
+
+  .metric-sub {
+    font-size: 12px;
+    color: var(--white-dim);
+  }
+
+  /* BAR CHART */
+  .chart-card {
+    background: var(--black-card);
+    border: 1px solid var(--black-border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+
+  .chart-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--white);
+  }
+
+  .bar-chart { display: flex; flex-direction: column; gap: 14px; }
+
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .bar-label {
+    font-size: 12px;
+    color: var(--white-muted);
+    width: 130px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  .bar-track {
+    flex: 1;
+    height: 28px;
+    background: #F0EDE8;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.8s cubic-bezier(0.34, 1.1, 0.64, 1);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--black);
+    min-width: 36px;
+  }
+
+  .bar-pct {
+    font-size: 12px;
+    color: var(--white-dim);
+    width: 42px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* DONUT */
+  .donut-section {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+  }
+
+  .donut-wrap {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    flex-shrink: 0;
+  }
+
+  .donut-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .donut-pct {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .donut-sub-label {
+    font-size: 10px;
+    color: var(--white-dim);
+    margin-top: 2px;
+  }
+
+  .donut-legend { display: flex; flex-direction: column; gap: 12px; }
+
+  .legend-item { display: flex; align-items: center; gap: 10px; }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .legend-text { font-size: 13px; color: var(--white-muted); }
+  .legend-text strong { color: var(--white); font-weight: 600; }
+
+  /* PHOTO MODAL */
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-backdrop.open { display: flex; }
+
+  .modal-img {
+    max-width: 90vw;
+    max-height: 85vh;
+    border-radius: 12px;
+    border: 2px solid var(--black-border);
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    background: #FFFFFF;
+    border: 1px solid #E5E2DC;
+    color: #1A1A1A;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* FILTER BUTTONS */
+  .filter-btn {
+    padding: 7px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--black-border);
+    background: none;
+    color: var(--white-dim);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover { border-color: var(--orange); color: var(--orange); }
+  .filter-btn.active { background: var(--orange); color: #fff; border-color: var(--orange); font-weight: 600; }
+
+  /* ADMIN MODAL */
+  .admin-modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+  }
+  .admin-modal-backdrop.open { display: flex; }
+  .admin-modal {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 32px;
+    width: 360px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  }
+  .admin-modal h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--white);
+  }
+  .admin-modal p { font-size: 13px; color: var(--white-dim); margin-bottom: 20px; }
+  .admin-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--black-border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    margin-bottom: 16px;
+    outline: none;
+    background: #F7F5F2;
+    color: var(--white);
+  }
+  .admin-input:focus { border-color: var(--orange); }
+  .admin-modal-btns { display: flex; gap: 10px; }
+  .btn-cancel {
+    flex: 1; padding: 11px; border-radius: 8px; border: 1px solid var(--black-border);
+    background: none; color: var(--white-dim); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; cursor: pointer;
+  }
+  .btn-enter {
+    flex: 1; padding: 11px; border-radius: 8px; border: none;
+    background: var(--orange); color: #fff; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+
+  /* DELETE BTN */
+  .delete-btn {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--white-dim);
+    cursor: pointer;
+    padding: 4px 8px;
+    font-size: 12px;
+    transition: all 0.2s;
+    display: none;
+  }
+  .admin-mode .delete-btn { display: inline-flex; align-items: center; gap: 4px; }
+  .delete-btn:hover { background: rgba(208,58,57,0.08); border-color: var(--red); color: var(--red); }
+
+  /* PDF IMPORT */
+  .pdf-import-card {
+    background: linear-gradient(135deg, #FFF8F6 0%, #FFFFFF 100%);
+    border: 1.5px dashed rgba(232,83,58,0.4);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 28px;
+  }
+  .pdf-import-card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .pdf-import-card p { font-size: 13px; color: var(--white-dim); margin-bottom: 16px; }
+  .pdf-drop-zone {
+    border: 1.5px dashed var(--black-border);
+    border-radius: 10px;
+    padding: 24px;
+    text-align: center;
+    background: #F7F5F2;
+    cursor: pointer;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .pdf-drop-zone:hover { border-color: var(--orange); }
+  .pdf-drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .pdf-drop-zone p { font-size: 13px; color: var(--white-dim); margin: 0; }
+  .pdf-drop-zone strong { color: var(--orange); }
+
+  .ai-processing {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: #FFF8F6;
+    border: 1px solid rgba(232,83,58,0.2);
+    border-radius: 10px;
+    margin-top: 12px;
+  }
+  .ai-processing.visible { display: flex; }
+  .spinner {
+    width: 20px; height: 20px;
+    border: 2px solid rgba(232,83,58,0.2);
+    border-top-color: var(--orange);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .event-queue {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .event-card {
+    background: #FFFFFF;
+    border: 1px solid var(--black-border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .event-card.submitted { opacity: 0.4; }
+  .event-card-info { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .event-card-beo { font-weight: 600; font-size: 14px; color: var(--orange); }
+  .event-card-details { font-size: 12px; color: var(--white-dim); }
+  .event-card-details span { margin-right: 12px; }
+  .use-event-btn {
+    padding: 10px 18px;
+    background: var(--orange);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .use-event-btn:hover { background: var(--orange-light); }
+  .use-event-btn:disabled { background: #E5E2DC; color: #8A8780; cursor: default; }
+
+  /* ── MOBILE NAVIGATION ─────────────────────────────────────────── */
+  .mobile-nav {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #FFFFFF;
+    border-top: 1px solid var(--black-border);
+    z-index: 200;
+    padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+  }
+  .mobile-nav-inner {
+    display: flex;
+    justify-content: space-around;
+  }
+  .mobile-nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    padding: 6px 16px;
+    cursor: pointer;
+    color: var(--white-dim);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    transition: color 0.2s;
+    min-width: 64px;
+  }
+  .mobile-nav-btn.active { color: var(--orange); }
+  .mobile-nav-btn svg { width: 22px; height: 22px; }
+
+  /* ── RESPONSIVE ─────────────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    /* Header */
+    header { padding: 0 14px; height: 56px; background: #000; }
+    .logo-orange { font-size: 22px; }
+    .logo-fooda-letter { width: 14px; height: 14px; font-size: 8px; }
+    nav { display: none; }
+    .mobile-nav { display: flex; }
+
+    /* Main content */
+    main { padding: 16px 14px 100px; }
+    .page-header { margin-bottom: 20px; }
+    .page-header h1 { font-size: 26px; }
+    .page-header p { font-size: 13px; }
+
+    /* Form */
+    .form-card { padding: 18px 14px; border-radius: 12px; margin-bottom: 24px; }
+    .form-card h2 { font-size: 18px; margin-bottom: 18px; }
+    .form-grid { grid-template-columns: 1fr; gap: 14px; }
+    .form-group.full { grid-column: span 1; }
+    label { font-size: 11px; }
+    input[type="text"], input[type="time"], input[type="date"], select, textarea {
+      font-size: 16px; /* prevents iOS zoom on focus */
+      padding: 13px 14px;
+      border-radius: 10px;
+    }
+    .ontime-group { gap: 8px; }
+    .ontime-btn { flex: 1; padding: 16px 8px; font-size: 14px; border-radius: 10px; }
+    .submit-btn { width: 100%; padding: 18px; font-size: 17px; border-radius: 12px; margin-top: 8px; }
+
+    /* Upload zone */
+    .upload-zone { padding: 24px 16px; }
+    .upload-zone p { font-size: 14px; }
+
+    /* PDF import */
+    .pdf-import-card { padding: 16px 14px; }
+    .pdf-drop-zone { padding: 20px 14px; }
+    .event-card { flex-wrap: wrap; gap: 10px; padding: 14px; }
+    .use-event-btn { width: 100%; text-align: center; padding: 12px; }
+
+    /* Records */
+    .records-section h2 { font-size: 18px; }
+    .records-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .records-table { min-width: 640px; }
+    .records-table td, .records-table th { padding: 10px 12px; font-size: 12px; }
+    .beo-chip { font-size: 11px; padding: 3px 7px; }
+    .status-pill { font-size: 11px; padding: 4px 8px; }
+
+    /* Analytics */
+    .analytics-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .metric-card { padding: 14px 12px; }
+    .metric-value { font-size: 28px; }
+    .metric-label { font-size: 10px; }
+    .chart-card { padding: 18px 14px; }
+    .chart-card h3 { font-size: 14px; }
+    div[style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
+    .donut-section { flex-direction: column; align-items: flex-start; gap: 14px; }
+    .bar-label { width: 80px; font-size: 11px; }
+    .filter-btn { padding: 8px 12px; font-size: 13px; }
+
+    /* Filter bar */
+    div[style*="display:flex;align-items:center;gap:10px;margin-bottom:18px"] {
+      flex-direction: column; align-items: flex-start;
+    }
+
+    /* Admin modal */
+    .admin-modal { width: calc(100vw - 24px); }
+  }
+
+  @media (max-width: 400px) {
+    .logo-orange { font-size: 19px; }
+    .page-header h1 { font-size: 22px; }
+    .analytics-grid { grid-template-columns: 1fr 1fr; }
+    .metric-value { font-size: 24px; }
+    main { padding: 14px 12px 100px; }
+  }
+  .nav-logo{display:flex;align-items:center;gap:0;text-decoration:none}
+  .logo-lockup{display:flex;flex-direction:column;line-height:1}
+  .logo-orange{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:#E8513A;letter-spacing:-1px;text-transform:uppercase}
+  .logo-byfooda{display:flex;align-items:center;gap:4px;margin-top:1px}
+  .logo-by{font-size:10px;color:#888;letter-spacing:1px;text-transform:uppercase}
+  .logo-tiles{display:inline-flex;gap:2px}
+  .logo-tiles span{background:#E8513A;color:#000;font-family:'Playfair Display',serif;font-weight:700;font-size:9px;width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;border-radius:2px}
+  .logo-div{width:1px;background:#333;height:28px;margin:0 12px}
+  .logo-sub{font-size:11px;letter-spacing:2px;color:#888;text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex; align-items:center; gap:16px;">
+      <a class="nav-logo" href="home.html">
+    <div class="logo-lockup">
+      <div class="logo-orange">ORANGE</div>
+      <div class="logo-byfooda">
+        <span class="logo-by">by</span>
+        <div class="logo-tiles"><span>f</span><span>o</span><span>o</span><span>d</span><span>a</span></div>
+      </div>
+    </div>
+    <div class="logo-div"></div>
+    <div class="logo-sub">Catering Tracker</div>
+  </a>
+    <div style="width:1px; height:28px; background:#333;"></div>
+</div>
+  <nav style="display:flex;align-items:center;gap:4px">
+    <a href="home.html" style="display:flex;align-items:center;padding:8px 14px;border-radius:6px;color:var(--white-dim);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;text-decoration:none;border:1px solid var(--black-border);margin-right:6px;transition:background .2s" onmouseover="this.style.background='var(--black-hover)'" onmouseout="this.style.background=''">← All Tools</a>
+    <button class="tab-btn active" onclick="switchTab('log')">New Entry</button>
+    <button class="tab-btn" onclick="switchTab('records')">Records</button>
+    <button class="tab-btn" onclick="switchTab('analytics')">Analytics</button>
+    <button class="tab-btn" id="admin-btn" onclick="toggleAdmin()" style="margin-left:8px; border: none; border-bottom: 3px solid transparent;">Admin</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- LOG TAB -->
+  <div id="tab-log" class="tab-panel active">
+    <div class="page-header">
+      <h1>Log a <span>Drop-Off</span></h1>
+      <p>Record catering delivery details for each BEO event</p>
+    </div>
+
+    <!-- PDF IMPORT -->
+    <div class="pdf-import-card">
+      <h2>
+        <svg width="18" height="18" fill="none" stroke="var(--orange)" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Import Daily Events from PDF
+      </h2>
+      <p>Upload your daily event sheet and AI will automatically extract all events and pre-fill the form fields for each one.</p>
+      <div class="pdf-drop-zone">
+        <input type="file" id="pdf-input" accept=".pdf" onchange="handlePdfUpload(event)" />
+        <svg width="28" height="28" fill="none" stroke="var(--orange)" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 10px; display:block;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <p><strong>Click to upload</strong> your daily BEO sheet</p>
+        <p style="margin-top:4px; font-size:11px;">PDF files only</p>
+      </div>
+      <div class="ai-processing" id="ai-processing">
+        <div class="spinner" id="ai-spinner"></div>
+        <span style="font-size:13px; color:var(--white-muted); flex:1;" id="ai-status">Reading your event sheet with AI...</span>
+
+      </div>
+      <div class="event-queue" id="event-queue"></div>
+    </div>
+
+    <div class="form-card">
+      <h2>New Drop-Off Entry</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>BEO Number</label>
+          <input type="text" id="beo" placeholder="e.g. BEO-2024-0187" />
+        </div>
+        <div class="form-group">
+          <label>Event Date</label>
+          <input type="date" id="event-date" />
+        </div>
+        <div class="form-group">
+          <label>Scheduled Drop-Off Time</label>
+          <input type="time" id="scheduled-time" />
+        </div>
+        <div class="form-group">
+          <label>Actual Drop-Off Time</label>
+          <input type="time" id="actual-time" />
+        </div>
+        <div class="form-group">
+          <label>Delivered By</label>
+          <input type="text" id="driver" placeholder="Driver / staff name" />
+        </div>
+        <div class="form-group">
+          <label>Building Name</label>
+          <select id="client" class="client-select">
+            <option value="">— Select a building —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Location</label>
+          <input type="text" id="location" placeholder="e.g. 6th floor, 3rd floor, Suite 200..." />
+        </div>
+        <div class="form-group full">
+          <label>Was Order On Time?</label>
+          <div class="ontime-group">
+            <button class="ontime-btn" id="btn-yes" onclick="setOnTime(true)">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Yes — On Time
+            </button>
+            <button class="ontime-btn" id="btn-no" onclick="setOnTime(false)">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              No — Late
+            </button>
+          </div>
+        </div>
+        <div class="form-group full">
+          <label>Notes (optional)</label>
+          <textarea id="notes" placeholder="Any delivery notes, issues, or comments..."></textarea>
+        </div>
+        <div class="form-group full">
+          <label>Photo Upload</label>
+          <div class="upload-zone" id="upload-zone">
+            <input type="file" id="photo-input" accept="image/*" onchange="handlePhoto(event)" />
+            <div class="upload-icon">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" color="#E8533A"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <p><strong>Click to upload</strong> or drag and drop</p>
+            <p style="margin-top:4px; font-size:11px;">JPG, PNG, HEIC up to 10MB</p>
+          </div>
+          <div class="upload-preview" id="upload-preview">
+            <img id="preview-img" src="" alt="Preview" />
+            <span id="preview-name">photo.jpg</span>
+            <button onclick="clearPhoto()" style="background:none;border:none;color:var(--white-dim);cursor:pointer;font-size:18px;line-height:1;">×</button>
+          </div>
+        </div>
+      </div>
+      <button class="submit-btn" onclick="submitEntry()">Submit Drop-Off Record</button>
+    </div>
+  </div>
+
+  <!-- RECORDS TAB -->
+  <div id="tab-records" class="tab-panel">
+    <div class="page-header">
+      <h1>Drop-Off <span>Records</span></h1>
+      <p>All logged catering delivery events</p>
+    </div>
+    <div class="records-section">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+        <h2 style="margin:0">All Entries <span id="record-count" style="font-size:14px;color:var(--white-dim);font-family:'DM Sans',sans-serif;font-weight:400;"></span></h2>
+        <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <select id="rec-filter-region" onchange="renderRecords()" style="padding:7px 12px;border:1px solid var(--black-border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--black);background:#fff;outline:none;cursor:pointer;-webkit-appearance:none">
+            <option value="">All Regions</option>
+            <option value="Alex Oetken">Alex Oetken</option>
+            <option value="Jen Trost">Jen Trost</option>
+            <option value="Krys Russo">Krys Russo</option>
+            <option value="Paul Baerenstecher">Paul Baerenstecher</option>
+            <option value="Troy Robinson">Troy Robinson</option>
+          </select>
+          <select id="rec-filter-location" onchange="renderRecords()" style="padding:7px 12px;border:1px solid var(--black-border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--black);background:#fff;outline:none;cursor:pointer;-webkit-appearance:none;min-width:180px">
+            <option value="">All Locations</option>
+          </select>
+          <input type="text" id="rec-filter-search" oninput="renderRecords()" placeholder="Search BEO, driver..." style="padding:7px 12px;border:1px solid var(--black-border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--black);background:#fff;outline:none;width:180px">
+        </div>
+      </div>
+      <div class="records-table-wrap">
+        <table class="records-table">
+          <thead>
+            <tr>
+              <th>BEO #</th>
+              <th>Date</th>
+              <th>Building Name</th>
+              <th>Location</th>
+              <th>Delivered By</th>
+              <th>Scheduled</th>
+              <th>Actual</th>
+              <th>Status</th>
+              <th>Photo</th>
+              <th id="delete-col-header" style="display:none;">Delete</th>
+            </tr>
+          </thead>
+          <tbody id="records-tbody">
+            <tr><td colspan="8"><div class="empty-state"><p>No records yet. Log your first drop-off!</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANALYTICS TAB -->
+  <div id="tab-analytics" class="tab-panel">
+    <div class="page-header">
+      <h1>Delivery <span>Analytics</span></h1>
+      <p>On-time performance insights across all catering events</p>
+    </div>
+
+    <!-- DATE FILTER -->
+    <div style="background:#FFFFFF; border:1px solid var(--black-border); border-radius:12px; padding:20px; margin-bottom:28px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+      <span style="font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--white-dim);">Filter by</span>
+      <div style="display:flex; gap:8px;">
+        <button class="filter-btn active" id="filter-all" onclick="setFilter('all')">All Time</button>
+        <button class="filter-btn" id="filter-year" onclick="setFilter('year')">This Year</button>
+        <button class="filter-btn" id="filter-month" onclick="setFilter('month')">This Month</button>
+        <button class="filter-btn" id="filter-custom" onclick="setFilter('custom')">Custom</button>
+      </div>
+      <div id="custom-range" style="display:none; align-items:center; gap:8px; flex-wrap:wrap;">
+        <select id="filter-year-sel" onchange="applyCustomFilter()" style="width:auto; padding:8px 12px;">
+        </select>
+        <select id="filter-month-sel" onchange="applyCustomFilter()" style="width:auto; padding:8px 12px;">
+          <option value="">All months</option>
+          <option value="01">January</option>
+          <option value="02">February</option>
+          <option value="03">March</option>
+          <option value="04">April</option>
+          <option value="05">May</option>
+          <option value="06">June</option>
+          <option value="07">July</option>
+          <option value="08">August</option>
+          <option value="09">September</option>
+          <option value="10">October</option>
+          <option value="11">November</option>
+          <option value="12">December</option>
+        </select>
+      </div>
+      <select id="filter-region" onchange="renderAnalytics()" style="padding:8px 14px;border:1px solid var(--black-border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--black);background:#fff;outline:none;cursor:pointer;-webkit-appearance:none;">
+        <option value="">All Regions</option>
+        <option value="Alex Oetken">Alex Oetken</option>
+        <option value="Jen Trost">Jen Trost</option>
+        <option value="Krys Russo">Krys Russo</option>
+        <option value="Paul Baerenstecher">Paul Baerenstecher</option>
+        <option value="Troy Robinson">Troy Robinson</option>
+      </select>
+      <select id="filter-location" onchange="renderAnalytics()" style="padding:8px 14px;border:1px solid var(--black-border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--black);background:#fff;outline:none;cursor:pointer;-webkit-appearance:none;min-width:180px">
+        <option value="">All Locations</option>
+      </select>
+      <span id="filter-label" style="font-size:13px; color:var(--orange); font-weight:500; margin-left:auto;"></span>
+    </div>
+
+    <div class="analytics-grid">
+      <div class="metric-card accent-orange">
+        <div class="metric-label">Total Deliveries</div>
+        <div class="metric-value orange" id="stat-total">0</div>
+        <div class="metric-sub">All time</div>
+      </div>
+      <div class="metric-card accent-green">
+        <div class="metric-label">On Time Rate</div>
+        <div class="metric-value green" id="stat-pct">—</div>
+        <div class="metric-sub" id="stat-pct-sub">No data yet</div>
+      </div>
+      <div class="metric-card accent-red">
+        <div class="metric-label">Late Deliveries</div>
+        <div class="metric-value red" id="stat-late">0</div>
+        <div class="metric-sub">Missed window</div>
+      </div>
+      <div class="metric-card accent-amber">
+        <div class="metric-label">Unique Drivers</div>
+        <div class="metric-value amber" id="stat-drivers">0</div>
+        <div class="metric-sub">Active staff</div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+      <div class="chart-card">
+        <h3>On-Time vs Late</h3>
+        <div class="donut-section">
+          <div class="donut-wrap">
+            <svg viewBox="0 0 140 140" width="140" height="140">
+              <circle cx="70" cy="70" r="54" fill="none" stroke="#E5E2DC" stroke-width="18"/>
+              <circle id="donut-late" cx="70" cy="70" r="54" fill="none" stroke="#E24B4A" stroke-width="18" stroke-dasharray="0 339" stroke-linecap="round" transform="rotate(-90 70 70)" style="transition: stroke-dasharray 0.8s ease;"/>
+              <circle id="donut-ontime" cx="70" cy="70" r="54" fill="none" stroke="#3DB87A" stroke-width="18" stroke-dasharray="0 339" stroke-linecap="round" transform="rotate(-90 70 70)" style="transition: stroke-dasharray 0.8s ease;"/>
+            </svg>
+            <div class="donut-center">
+              <div class="donut-pct" id="donut-pct-label">—</div>
+              <div class="donut-sub-label">on time</div>
+            </div>
+          </div>
+          <div class="donut-legend">
+            <div class="legend-item">
+              <div class="legend-dot" style="background:var(--green)"></div>
+              <div class="legend-text">On Time: <strong id="legend-ontime">0</strong></div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:var(--red)"></div>
+              <div class="legend-text">Late: <strong id="legend-late">0</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>Performance by Driver</h3>
+        <div class="bar-chart" id="driver-chart">
+          <p style="color:var(--white-dim); font-size:13px;">No data yet.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-nav">
+  <div class="mobile-nav-inner">
+    <button class="mobile-nav-btn active" id="mob-log" onclick="switchTabMobile('log', this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5"/><path d="M17.586 3.586a2 2 0 0 1 2.828 2.828L12 15l-4 1 1-4 9.586-9.414z"/></svg>
+      Log
+    </button>
+    <button class="mobile-nav-btn" id="mob-records" onclick="switchTabMobile('records', this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Records
+    </button>
+    <button class="mobile-nav-btn" id="mob-analytics" onclick="switchTabMobile('analytics', this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analytics
+    </button>
+    <button class="mobile-nav-btn" id="mob-admin" onclick="toggleAdmin()">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Admin
+    </button>
+  </div>
+</nav>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-dot"></div>
+  <span id="toast-msg">Drop-off logged successfully!</span>
+</div>
+
+<!-- ADMIN MODAL -->
+<div class="admin-modal-backdrop" id="admin-modal">
+  <div class="admin-modal">
+    <h3>Admin Access</h3>
+    <p>Enter the admin password to enable delete mode.</p>
+    <input class="admin-input" type="password" id="admin-password" placeholder="Password" onkeydown="if(event.key==='Enter') checkAdmin()" />
+    <div id="admin-error" style="color:var(--red); font-size:12px; margin-bottom:12px; display:none;">Incorrect password. Try again.</div>
+    <div class="admin-modal-btns">
+      <button class="btn-cancel" onclick="closeAdminModal()">Cancel</button>
+      <button class="btn-enter" onclick="checkAdmin()">Enter</button>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop" id="photo-modal" onclick="closeModal()">
+  <button class="modal-close" onclick="closeModal()">×</button>
+  <img class="modal-img" id="modal-img" src="" alt="Drop-off photo" />
+</div>
+
+<script>
+  // ── Globals exposed immediately so onclick handlers can find them ───
+  var records = [];
+  var onTimeVal = null;
+  var photoDataUrl = null;
+  var photoFileName = null;
+  var db;
+  var isAdmin = false;
+  var currentFilter = 'all';
+  var ADMIN_PASSWORD = 'fooda2024';
+
+  // ── Admin functions ─────────────────────────────────────────────────
+  function toggleAdmin() {
+    if (isAdmin) {
+      isAdmin = false;
+      document.body.classList.remove('admin-mode');
+      document.getElementById('admin-btn').textContent = 'Admin';
+      document.getElementById('admin-btn').style.background = '';
+      document.getElementById('admin-btn').style.color = '';
+      document.getElementById('delete-col-header').style.display = 'none';
+      renderRecords();
+      showToast('Admin mode off');
+    } else {
+      document.getElementById('admin-modal').classList.add('open');
+      document.getElementById('admin-password').value = '';
+      document.getElementById('admin-error').style.display = 'none';
+      setTimeout(() => document.getElementById('admin-password').focus(), 100);
+    }
+  }
+
+  function checkAdmin() {
+    const pw = document.getElementById('admin-password').value;
+    if (pw === ADMIN_PASSWORD) {
+      isAdmin = true;
+      document.body.classList.add('admin-mode');
+      document.getElementById('admin-btn').textContent = 'Admin ON';
+      document.getElementById('admin-btn').style.background = 'var(--red)';
+      document.getElementById('admin-btn').style.color = '#fff';
+      document.getElementById('delete-col-header').style.display = '';
+      closeAdminModal();
+      switchTab('records');
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-btn')[1].classList.add('active');
+      renderRecords();
+      showToast('Admin mode enabled — you can now delete records');
+    } else {
+      document.getElementById('admin-error').style.display = 'block';
+    }
+  }
+
+  function closeAdminModal() {
+    document.getElementById('admin-modal').classList.remove('open');
+  }
+
+  async function deleteRecord(id) {
+    if (!confirm('Delete this record? This cannot be undone.')) return;
+    try {
+      await db.collection("catering").doc(id).delete();
+      showToast('Record deleted');
+    } catch(err) {
+      showToast('Error deleting record', true);
+    }
+  }
+
+  // ── Filter functions ────────────────────────────────────────────────
+  function setFilter(type) {
+    currentFilter = type;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('filter-' + type).classList.add('active');
+    document.getElementById('custom-range').style.display = type === 'custom' ? 'flex' : 'none';
+    renderAnalytics();
+  }
+
+  function applyCustomFilter() { renderAnalytics(); }
+
+  function getFilteredRecords(regionSel, locationSel) {
+    const now = new Date();
+    const yr = now.getFullYear();
+    const mo = String(now.getMonth() + 1).padStart(2, '0');
+    const regionF   = regionSel   || document.getElementById('filter-region')?.value   || '';
+    const locationF = locationSel || document.getElementById('filter-location')?.value || '';
+
+    let filtered = records;
+    if (currentFilter === 'year')   filtered = filtered.filter(r => r.date && r.date.startsWith(String(yr)));
+    if (currentFilter === 'month')  filtered = filtered.filter(r => r.date && r.date.startsWith(`${yr}-${mo}`));
+    if (currentFilter === 'custom') {
+      const selYear  = document.getElementById('filter-year-sel').value;
+      const selMonth = document.getElementById('filter-month-sel').value;
+      filtered = filtered.filter(r => {
+        if (!r.date) return false;
+        if (selYear  && !r.date.startsWith(selYear)) return false;
+        if (selMonth && !r.date.slice(5,7).startsWith(selMonth)) return false;
+        return true;
+      });
+    }
+    if (regionF)   filtered = filtered.filter(r => (r.region || '') === regionF);
+    if (locationF) filtered = filtered.filter(r => (r.client || '') === locationF);
+    return filtered;
+  }
+
+  // Populate a location dropdown based on current records and optional region filter
+  var ALL_LOCATIONS_REGION = {
+    "1200 Enclave":"Paul Baerenstecher","1540Broadway":"Krys Russo","200 Wood":"Krys Russo",
+    "30IA":"Alex Oetken","330 Kilbourn":"Krys Russo","330 N Wabash Chicago":"Krys Russo",
+    "7700 Parmer":"Paul Baerenstecher","800 Brand":"Jen Trost","BCH Needham":"Alex Oetken",
+    "Berkeley Cafeteria":"Troy Robinson","Best Buy":"Alex Oetken","Broadmoor":"Paul Baerenstecher",
+    "CCC":"Krys Russo","CityWest":"Paul Baerenstecher","Credit Human":"Paul Baerenstecher",
+    "Discover Riverwoods":"Krys Russo","Discover Whitehall":"Krys Russo","EIP Cafe":"Alex Oetken",
+    "Elevance Health":"Alex Oetken","Elevance Health Atlanta":"Alex Oetken",
+    "Elevance Health Corporate HQ":"Alex Oetken","Exxon Baytown":"Paul Baerenstecher",
+    "FMI":"Krys Russo","Four Oaks Place":"Paul Baerenstecher","Georgia Power":"Alex Oetken",
+    "JPMC":"Troy Robinson","Levi's":"Troy Robinson","Lumen Denver":"Jen Trost",
+    "Marathon Oil":"Paul Baerenstecher","Medical City Dallas":"Paul Baerenstecher",
+    "NetApp":"Alex Oetken","Netpark Tampa":"Alex Oetken","Northern Trust":"Krys Russo",
+    "NorthPark":"Alex Oetken","Oncor":"Paul Baerenstecher","Paramount NYC":"Krys Russo",
+    "Phillips 66":"Paul Baerenstecher","Plaza at Enclave":"Paul Baerenstecher",
+    "QualcommBoulder":"Troy Robinson","QualcommSanDiego":"Troy Robinson",
+    "QualcommSantaClara":"Troy Robinson","Royal Philips Cambridge":"Krys Russo",
+    "Rush":"Krys Russo","Sally Beauty":"Paul Baerenstecher","So CA Gas":"Jen Trost",
+    "Southwest Airlines":"Paul Baerenstecher","Switching Stations":"Krys Russo",
+    "TBK Bank":"Paul Baerenstecher","Times Square Tower":"Krys Russo","TMC":"Alex Oetken",
+    "TMobile":"Paul Baerenstecher","Triangle Plaza":"Krys Russo","Trive":"Paul Baerenstecher",
+    "ULA":"Jen Trost","Vans OC":"Jen Trost","Vantive HQ":"Krys Russo",
+    "VF Corporation":"Jen Trost","VF Greensboro":"Jen Trost","Weatherford":"Paul Baerenstecher",
+    "Wesley Medical KS":"Jen Trost","West Memorial":"Paul Baerenstecher",
+    "Workplace Convenience Services":"Alex Oetken"
+  };
+
+  function populateLocationDropdown(selId, regionF) {
+    var sel = document.getElementById(selId);
+    if (!sel) return;
+    var cur = sel.value;
+    var locs = Object.entries(ALL_LOCATIONS_REGION)
+      .filter(function(e){ return !regionF || e[1] === regionF; })
+      .map(function(e){ return e[0]; })
+      .sort();
+    sel.innerHTML = '<option value="">All Locations</option>' +
+      locs.map(function(l){ return '<option value="' + l + '" ' + (l===cur?'selected':'') + '>' + l + '</option>'; }).join('');
+  }
+
+  function populateYearFilter() {
+    const years = [...new Set(records.map(r => r.date ? r.date.slice(0,4) : null).filter(Boolean))].sort().reverse();
+    const sel = document.getElementById('filter-year-sel');
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">All years</option>' + years.map(y => `<option value="${y}" ${y===cur?'selected':''}>${y}</option>`).join('');
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    event.currentTarget.classList.add('active');
+    if (tab === 'records') renderRecords();
+    if (tab === 'analytics') renderAnalytics();
+  }
+
+  function switchTabMobile(tab, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    btn.classList.add('active');
+    if (tab === 'records') renderRecords();
+    if (tab === 'analytics') renderAnalytics();
+    window.scrollTo(0, 0);
+  }
+
+  // ── On-time toggle ──────────────────────────────────────────────────
+  function setOnTime(val) {
+    onTimeVal = val;
+    document.getElementById('btn-yes').className = 'ontime-btn' + (val === true ? ' selected-yes' : '');
+    document.getElementById('btn-no').className = 'ontime-btn' + (val === false ? ' selected-no' : '');
+  }
+
+  // ── Photo handling ──────────────────────────────────────────────────
+  function handlePhoto(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    photoFileName = file.name;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const MAX = 800;
+        let w = img.width, h = img.height;
+        if (w > h && w > MAX) { h = h * MAX / w; w = MAX; }
+        else if (h > MAX) { w = w * MAX / h; h = MAX; }
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        photoDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+        document.getElementById('preview-img').src = photoDataUrl;
+        document.getElementById('preview-name').textContent = file.name;
+        document.getElementById('upload-preview').classList.add('visible');
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearPhoto() {
+    photoDataUrl = null;
+    photoFileName = null;
+    document.getElementById('photo-input').value = '';
+    document.getElementById('upload-preview').classList.remove('visible');
+  }
+
+  // ── Submit entry ────────────────────────────────────────────────────
+  async function submitEntry() {
+    const beo = document.getElementById('beo').value.trim();
+    const date = document.getElementById('event-date').value;
+    const driver = document.getElementById('driver').value.trim();
+
+    if (!beo)             { showToast('Please enter a BEO number.', true); return; }
+    if (!date)            { showToast('Please select an event date.', true); return; }
+    if (!driver)          { showToast('Please enter who dropped off the order.', true); return; }
+    if (onTimeVal === null) { showToast('Please select if the order was on time.', true); return; }
+
+    const btn = document.querySelector('.submit-btn');
+    btn.textContent = 'Saving…';
+    btn.disabled = true;
+
+    try {
+      console.log('Saving to Firebase...');
+      const clientVal = document.getElementById('client').value.trim() || '—';
+      const locationVal = document.getElementById('location').value.trim();
+      // Look up region from LOCATIONS_REGION map
+      const regionVal = LOCATIONS_REGION[clientVal] || '';
+      await db.collection("catering").add({
+        beo,
+        date,
+        client: clientVal,
+        location: locationVal,
+        region: regionVal,
+        driver,
+        scheduledTime: document.getElementById('scheduled-time').value || '—',
+        actualTime: document.getElementById('actual-time').value || '—',
+        onTime: onTimeVal,
+        notes: document.getElementById('notes').value.trim(),
+        photo: photoDataUrl || null,
+        photoName: photoFileName || null,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      console.log('Saved!');
+      document.getElementById('beo').value = '';
+      document.getElementById('event-date').valueAsDate = new Date();
+      document.getElementById('scheduled-time').value = '';
+      document.getElementById('actual-time').value = '';
+      document.getElementById('driver').value = '';
+      document.getElementById('client').value = '';
+      document.getElementById('location').value = '';
+      document.getElementById('notes').value = '';
+      onTimeVal = null;
+      document.getElementById('btn-yes').className = 'ontime-btn';
+      document.getElementById('btn-no').className = 'ontime-btn';
+      clearPhoto();
+      showToast('Drop-off logged successfully!');
+
+      // Mark the imported event as logged if one was active
+      if (window.activeImportedEventIndex !== undefined && window.activeImportedEventIndex !== null) {
+        var idx = window.activeImportedEventIndex;
+        try {
+          await db.collection('importedEvents').doc('event_' + idx).update({ submitted: true });
+          if (importedEvents[idx]) importedEvents[idx].submitted = true;
+          // Update the card UI
+          var card = document.getElementById('event-card-' + idx);
+          if (card) {
+            card.style.outline = '';
+            card.classList.add('submitted');
+            var fillBtn = document.getElementById('use-btn-' + idx);
+            if (fillBtn) {
+              var badge = document.createElement('span');
+              badge.setAttribute('style', 'display:inline-flex;align-items:center;gap:6px;background:rgba(42,158,98,0.12);color:var(--green);border:1px solid var(--green);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;flex-shrink:0;');
+              badge.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/><\/svg> Logged';
+              fillBtn.parentNode.replaceChild(badge, fillBtn);
+            }
+          }
+        } catch(e) { console.error('Error marking event logged:', e); }
+        window.activeImportedEventIndex = null;
+      }
+    } catch (err) {
+      console.error('Save error:', err.code, err.message);
+      showToast('Error: ' + err.message, true);
+    } finally {
+      btn.textContent = 'Submit Drop-Off Record';
+      btn.disabled = false;
+    }
+  }
+
+  // ── Toast ───────────────────────────────────────────────────────────
+  function showToast(msg, isErr) {
+    const t = document.getElementById('toast');
+    const dot = t.querySelector('.toast-dot');
+    document.getElementById('toast-msg').textContent = msg;
+    dot.style.background = isErr ? 'var(--red)' : 'var(--green)';
+    t.style.borderColor = isErr ? 'var(--red)' : 'var(--green)';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  // ── Helpers ─────────────────────────────────────────────────────────
+  function formatDate(d) {
+    if (!d) return '—';
+    const [y, m, day] = d.split('-');
+    return `${parseInt(m)}/${parseInt(day)}/${y}`;
+  }
+
+  function formatTime(t) {
+    if (!t || t === '—') return '—';
+    const [h, min] = t.split(':');
+    const hr = parseInt(h);
+    const ampm = hr >= 12 ? 'PM' : 'AM';
+    return `${hr % 12 || 12}:${min} ${ampm}`;
+  }
+
+  // ── Render Records ──────────────────────────────────────────────────
+  function renderRecords() {
+    const tbody = document.getElementById('records-tbody');
+    const regionF   = document.getElementById('rec-filter-region')?.value   || '';
+    const locationF = document.getElementById('rec-filter-location')?.value || '';
+    const search    = (document.getElementById('rec-filter-search')?.value || '').toLowerCase();
+
+    // Keep location dropdown in sync with selected region
+    populateLocationDropdown('rec-filter-location', regionF);
+
+    let filtered = records;
+    if (regionF)   filtered = filtered.filter(r => (r.region||'') === regionF);
+    if (locationF) filtered = filtered.filter(r => (r.client||'') === locationF);
+    if (search)    filtered = filtered.filter(r =>
+      `${r.beo} ${r.client} ${r.driver} ${r.notes}`.toLowerCase().includes(search)
+    );
+
+    document.getElementById('record-count').textContent = filtered.length ? `(${filtered.length})` : '';
+    document.getElementById('delete-col-header').style.display = isAdmin ? '' : 'none';
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><p>No records match your filters.</p></div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtered.map(r => `
+      <tr>
+        <td><span class="beo-chip">${r.beo}</span></td>
+        <td style="color:var(--white)">${formatDate(r.date)}</td>
+        <td>${r.client}</td>
+        <td style="color:var(--white-dim)">${r.location||'—'}</td>
+        <td style="color:var(--white)">${r.driver}</td>
+        <td>${formatTime(r.scheduledTime)}</td>
+        <td>${formatTime(r.actualTime)}</td>
+        <td><span class="status-pill ${r.onTime ? 'pill-on-time' : 'pill-late'}">${r.onTime ? '✓ On Time' : '✗ Late'}</span></td>
+        <td>
+          ${r.photo
+            ? `<img class="photo-thumb" src="${r.photo}" alt="photo" onclick="openModal('${r.photo}')" />`
+            : `<div class="no-photo"><svg width="14" height="14" fill="none" stroke="#999" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`}
+        </td>
+        <td style="display:${isAdmin ? '' : 'none'}">
+          <button class="delete-btn" onclick="deleteRecord('${r.id}')">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            Delete
+          </button>
+        </td>
+      </tr>`).join('');
+  }
+
+  // ── Render Analytics ────────────────────────────────────────────────
+  function renderAnalytics() {
+    populateYearFilter();
+    const regionF = document.getElementById('filter-region')?.value || '';
+    populateLocationDropdown('filter-location', regionF);
+    const filtered = getFilteredRecords();
+    const total = filtered.length;
+    const onTimeCount = filtered.filter(r => r.onTime).length;
+    const lateCount = total - onTimeCount;
+    const pct = total > 0 ? Math.round((onTimeCount / total) * 100) : null;
+    const drivers = new Set(filtered.map(r => r.driver)).size;
+
+    // Update filter label
+    const labels = { all: 'All time', year: 'This year', month: 'This month', custom: 'Custom range' };
+    document.getElementById('filter-label').textContent = total > 0 ? `${total} deliveries` : 'No data for this period';
+
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-pct').textContent = pct !== null ? pct + '%' : '—';
+    document.getElementById('stat-pct-sub').textContent = total > 0 ? `${onTimeCount} of ${total} on time` : 'No data yet';
+    document.getElementById('stat-late').textContent = lateCount;
+    document.getElementById('stat-drivers').textContent = drivers;
+
+    const circ = 2 * Math.PI * 54;
+    const onTimeDash = total > 0 ? (onTimeCount / total) * circ : 0;
+    const lateDash = total > 0 ? (lateCount / total) * circ : 0;
+    document.getElementById('donut-ontime').setAttribute('stroke-dasharray', `${onTimeDash} ${circ}`);
+    document.getElementById('donut-late').setAttribute('stroke-dasharray', `${lateDash} ${circ}`);
+    document.getElementById('donut-late').setAttribute('stroke-dashoffset', -onTimeDash);
+    document.getElementById('donut-pct-label').textContent = pct !== null ? pct + '%' : '—';
+    document.getElementById('legend-ontime').textContent = onTimeCount;
+    document.getElementById('legend-late').textContent = lateCount;
+
+    const driverChart = document.getElementById('driver-chart');
+    if (total === 0) { driverChart.innerHTML = '<p style="color:var(--white-dim); font-size:13px;">No data for this period.</p>'; return; }
+
+    const driverMap = {};
+    filtered.forEach(r => {
+      if (!driverMap[r.driver]) driverMap[r.driver] = { total: 0, onTime: 0 };
+      driverMap[r.driver].total++;
+      if (r.onTime) driverMap[r.driver].onTime++;
+    });
+
+    driverChart.innerHTML = Object.entries(driverMap)
+      .sort((a, b) => (b[1].onTime / b[1].total) - (a[1].onTime / a[1].total))
+      .map(([name, stats]) => {
+        const pctD = Math.round((stats.onTime / stats.total) * 100);
+        const color = pctD >= 80 ? 'var(--green)' : pctD >= 60 ? 'var(--amber)' : 'var(--red)';
+        return `<div class="bar-row">
+          <div class="bar-label">${name}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${pctD}%; background:${color};">${pctD}%</div></div>
+          <div class="bar-pct" style="color:${color}">${stats.total}x</div>
+        </div>`;
+      }).join('');
+  }
+
+  // ── Modal ───────────────────────────────────────────────────────────
+  function openModal(src) {
+    document.getElementById('modal-img').src = src;
+    document.getElementById('photo-modal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('photo-modal').classList.remove('open');
+  }
+
+  // ── PDF Import ──────────────────────────────────────────────────────
+  var importedEvents = [];
+
+  async function handlePdfUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const processing = document.getElementById('ai-processing');
+    const statusEl = document.getElementById('ai-status');
+    const queueEl = document.getElementById('event-queue');
+
+    processing.classList.add('visible');
+    statusEl.textContent = 'Reading your event sheet with AI...';
+    queueEl.innerHTML = '';
+    importedEvents = [];
+
+    try {
+      const base64 = await new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = () => res(reader.result.split(',')[1]);
+        reader.onerror = rej;
+        reader.readAsDataURL(file);
+      });
+
+      statusEl.textContent = 'Extracting events...';
+
+      const response = await fetch('https://fooda-proxy.troyrob1.workers.dev', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 2000,
+          messages: [{
+            role: 'user',
+            content: [
+              {
+                type: 'document',
+                source: { type: 'base64', media_type: 'application/pdf', data: base64 }
+              },
+              {
+                type: 'text',
+                text: `Extract ALL catering drop-off events from this BEO/event sheet. There may be multiple days worth of events. For each event return a JSON array. Each object must have exactly these keys: beo, building, date (YYYY-MM-DD format), scheduledTime (HH:MM 24hr format), driver. If a field is not found use empty string "". Return ONLY a raw JSON array, no markdown, no explanation, no backticks. Sort by date then time. Example: [{"beo":"12345","building":"Tower A","date":"2024-03-15","scheduledTime":"11:30","driver":"John Smith"},{"beo":"12346","building":"Tower B","date":"2024-03-16","scheduledTime":"09:00","driver":""}]`
+              }
+            ]
+          }]
+        })
+      });
+
+      const data = await response.json();
+      const text = data.content?.find(b => b.type === 'text')?.text || '[]';
+
+      let events = [];
+      try { events = JSON.parse(text.trim()); } catch(e) {
+        const match = text.match(/\[[\s\S]*\]/);
+        if (match) events = JSON.parse(match[0]);
+      }
+
+      if (!Array.isArray(events) || events.length === 0) {
+        statusEl.textContent = 'No events found. Make sure your PDF has BEO/event data.';
+        processing.classList.remove('visible');
+        return;
+      }
+
+      importedEvents = events;
+      statusEl.textContent = `Found ${events.length} event${events.length > 1 ? 's' : ''} — click "Fill Form" to load each one`;
+
+      // Save to Firebase so events persist across page loads
+      try {
+        const oldDocs = await db.collection('importedEvents').get();
+        const delBatch = db.batch();
+        oldDocs.forEach(doc => delBatch.delete(doc.ref));
+        await delBatch.commit();
+        const saveBatch = db.batch();
+        events.forEach((ev, i) => {
+          const ref = db.collection('importedEvents').doc('event_' + i);
+          saveBatch.set(ref, Object.assign({}, ev, { submitted: false, order: i }));
+        });
+        await saveBatch.commit();
+      } catch(e) { console.error('Error saving events to Firebase:', e); }
+
+      // Group events by date
+      const grouped = {};
+      events.forEach((ev, i) => {
+        const dateKey = ev.date || 'Unknown Date';
+        if (!grouped[dateKey]) grouped[dateKey] = [];
+        grouped[dateKey].push({ ...ev, index: i });
+      });
+
+      renderEventQueue(events);
+
+        } catch(err) {
+      console.error('PDF error:', err);
+      statusEl.textContent = 'Error reading PDF. Please try again.';
+    }
+
+    processing.classList.remove('visible');
+    document.getElementById('pdf-input').value = '';
+  }
+
+  function fillFormFromEvent(index) {
+    var ev = importedEvents[index];
+    if (!ev) return;
+
+    document.getElementById('beo').value = ev.beo || '';
+    document.getElementById('event-date').value = ev.date || '';
+    document.getElementById('scheduled-time').value = ev.scheduledTime || '';
+    document.getElementById('driver').value = ev.driver || '';
+    document.getElementById('location').value = ev.location || '';
+
+    // Fuzzy-match building name against the dropdown
+    var buildingRaw = (ev.building || '').toLowerCase().replace(/\s+/g,'');
+    var sel = document.getElementById('client');
+    var matched = false;
+    for (var i = 0; i < sel.options.length; i++) {
+      var opt = sel.options[i].value;
+      if (!opt) continue;
+      var optNorm = opt.toLowerCase().replace(/\s+/g,'');
+      if (optNorm === buildingRaw || optNorm.includes(buildingRaw) || buildingRaw.includes(optNorm)) {
+        sel.value = opt;
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) {
+      // If no match, add a temporary option with the raw value
+      var tempOpt = document.createElement('option');
+      tempOpt.value = ev.building;
+      tempOpt.textContent = ev.building + ' (from PDF)';
+      sel.appendChild(tempOpt);
+      sel.value = ev.building;
+    }
+
+    // Store which event is being filled so submit can mark it
+    window.activeImportedEventIndex = index;
+
+    // Highlight the selected card
+    document.querySelectorAll('.event-card').forEach(function(c) { c.style.outline = ''; });
+    var card = document.getElementById('event-card-' + index);
+    if (card) card.style.outline = '2px solid var(--orange)';
+
+    document.getElementById('beo').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    showToast('Form filled — complete and submit the entry!');
+  }
+
+
+  // ── Load saved imported events from Firebase ────────────────────────
+  async function loadImportedEvents() {
+    try {
+      const snapshot = await db.collection('importedEvents').orderBy('order').get();
+      if (snapshot.empty) return;
+      importedEvents = snapshot.docs.map(doc => doc.data());
+
+      // Filter out events from past dates — only show today and future
+      var today = new Date();
+      today.setHours(0, 0, 0, 0);
+      importedEvents = importedEvents.filter(function(ev) {
+        if (!ev.date) return true; // keep if no date
+        var evDate = new Date(ev.date + 'T00:00:00');
+        return evDate >= today;
+      });
+
+      if (importedEvents.length === 0) return; // nothing to show
+
+      // Cross-reference dropoffs to auto-detect which BEOs have been logged
+      const dropoffSnap = await db.collection('catering').get();
+      var loggedBeos = {};
+      dropoffSnap.forEach(function(doc) {
+        var d = doc.data();
+        if (d.beo) loggedBeos[d.beo.trim().toLowerCase()] = true;
+      });
+
+      // Mark each imported event based on whether its BEO exists in dropoffs
+      importedEvents = importedEvents.map(function(ev) {
+        var beoKey = (ev.beo || '').trim().toLowerCase();
+        return Object.assign({}, ev, { submitted: beoKey && loggedBeos[beoKey] ? true : false });
+      });
+
+      // Sync updated submitted states back to Firebase
+      var batch = db.batch();
+      importedEvents.forEach(function(ev, i) {
+        batch.update(db.collection('importedEvents').doc('event_' + i), { submitted: ev.submitted });
+      });
+      batch.commit().catch(function(e) {});
+
+      const statusEl = document.getElementById('ai-status');
+      var pendingCount = importedEvents.filter(function(e) { return !e.submitted; }).length;
+      statusEl.textContent = importedEvents.length + ' event' + (importedEvents.length > 1 ? 's' : '') + ' loaded — ' + pendingCount + ' remaining';
+      document.getElementById('ai-processing').classList.add('visible');
+      renderEventQueue(importedEvents);
+    } catch(e) { console.error('Error loading events:', e); }
+  }
+
+  function renderEventQueue(events) {
+    var queueEl = document.getElementById('event-queue');
+    var grouped = {};
+    events.forEach(function(ev, i) {
+      var dateKey = ev.date || 'Unknown Date';
+      if (!grouped[dateKey]) grouped[dateKey] = [];
+      grouped[dateKey].push({ ev: ev, index: i });
+    });
+
+    var html = '';
+    Object.keys(grouped).forEach(function(dateKey) {
+      var dayEvents = grouped[dateKey];
+      var dateLabel = dateKey !== 'Unknown Date'
+        ? new Date(dateKey + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+        : 'Unknown Date';
+
+      html += '<div style="margin-bottom:8px;">';
+      html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;margin-top:16px;">';
+      html += '<div style="background:var(--black);color:#fff;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;text-transform:uppercase;">' + dateLabel + '</div>';
+      html += '<div style="font-size:12px;color:var(--white-dim);">' + dayEvents.length + ' event' + (dayEvents.length > 1 ? 's' : '') + '</div>';
+      html += '</div>';
+
+      dayEvents.forEach(function(item) {
+        var i = item.index;
+        var ev = item.ev;
+        var submitted = ev.submitted || false;
+        var timeDisplay = ev.scheduledTime || '—';
+        var building = ev.building || 'Unknown Building';
+        var driver = ev.driver || 'Unassigned';
+        var beo = ev.beo || 'No BEO';
+
+        html += '<div class="event-card' + (submitted ? ' submitted' : '') + '" id="event-card-' + i + '">';
+        html += '<div style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;">';
+        html += '<div style="background:var(--orange);color:#fff;border-radius:10px;padding:10px 14px;text-align:center;flex-shrink:0;min-width:64px;">';
+        html += '<div style="font-size:18px;font-weight:900;line-height:1;">' + timeDisplay + '</div>';
+        html += '<div style="font-size:10px;opacity:0.85;margin-top:2px;">drop-off</div>';
+        html += '</div>';
+        html += '<div style="flex:1;min-width:0;">';
+        html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">';
+        html += '<span style="font-weight:700;font-size:15px;color:var(--white);">' + building + '</span>';
+        html += '</div>';
+        html += '<div style="display:flex;gap:12px;font-size:12px;color:var(--white-dim);flex-wrap:wrap;">';
+        html += '<span>BEO ' + beo + '</span>';
+        html += '<span>' + driver + '</span>';
+        html += '</div>';
+        html += '</div></div>';
+        if (submitted) {
+          html += '<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(42,158,98,0.12);color:var(--green);border:1px solid var(--green);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;flex-shrink:0;">'
+            + '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>'
+            + 'Logged</span>';
+        } else {
+          html += '<button class="use-event-btn" id="use-btn-' + i + '" onclick="fillFormFromEvent(' + i + ')">Fill Form</button>';
+        }
+        html += '</div>';
+      });
+      html += '</div>';
+    });
+
+    queueEl.innerHTML = html;
+  }
+
+
+
+  // ── LOCATIONS DROPDOWN ──────────────────────────────────────────────
+  const LOCATIONS = [
+    "1200 Enclave","1540Broadway","200 Wood","30IA","330 Kilbourn",
+    "330 N Wabash Chicago","7700 Parmer","800 Brand","BCH Needham",
+    "Berkeley Cafeteria","Best Buy","Broadmoor","CCC","CityWest",
+    "Credit Human","Discover Riverwoods","Discover Whitehall","EIP Cafe",
+    "Elevance Health","Elevance Health Atlanta","Elevance Health Corporate HQ",
+    "Exxon Baytown","FMI","Four Oaks Place","Georgia Power","JPMC",
+    "Levi's","Lumen Denver","Marathon Oil","Medical City Dallas",
+    "NetApp","Netpark Tampa","Northern Trust","NorthPark","Oncor",
+    "Paramount NYC","Phillips 66","Plaza at Enclave","QualcommBoulder",
+    "QualcommSanDiego","QualcommSantaClara","Royal Philips Cambridge","Rush",
+    "Sally Beauty","So CA Gas","Southwest Airlines","Switching Stations",
+    "TBK Bank","Times Square Tower","TMC","TMobile","Triangle Plaza",
+    "Trive","ULA","Vans OC","Vantive HQ","VF Corporation","VF Greensboro",
+    "Weatherford","Wesley Medical KS","West Memorial",
+    "Workplace Convenience Services"
+  ];
+  (function() {
+    const sel = document.getElementById('client');
+    if (!sel) return;
+    LOCATIONS.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      sel.appendChild(opt);
+    });
+  })();
+
+  // Region map for auto-saving region on submit
+  const LOCATIONS_REGION = {
+    "1200 Enclave":"Paul Baerenstecher","1540Broadway":"Krys Russo","200 Wood":"Krys Russo",
+    "30IA":"Alex Oetken","330 Kilbourn":"Krys Russo","330 N Wabash Chicago":"Krys Russo",
+    "7700 Parmer":"Paul Baerenstecher","800 Brand":"Jen Trost","BCH Needham":"Alex Oetken",
+    "Berkeley Cafeteria":"Troy Robinson","Best Buy":"Alex Oetken","Broadmoor":"Paul Baerenstecher",
+    "CCC":"Krys Russo","CityWest":"Paul Baerenstecher","Credit Human":"Paul Baerenstecher",
+    "Discover Riverwoods":"Krys Russo","Discover Whitehall":"Krys Russo","EIP Cafe":"Alex Oetken",
+    "Elevance Health":"Alex Oetken","Elevance Health Atlanta":"Alex Oetken",
+    "Elevance Health Corporate HQ":"Alex Oetken","Exxon Baytown":"Paul Baerenstecher",
+    "FMI":"Krys Russo","Four Oaks Place":"Paul Baerenstecher","Georgia Power":"Alex Oetken",
+    "JPMC":"Troy Robinson","Levi's":"Troy Robinson","Lumen Denver":"Jen Trost",
+    "Marathon Oil":"Paul Baerenstecher","Medical City Dallas":"Paul Baerenstecher",
+    "NetApp":"Alex Oetken","Netpark Tampa":"Alex Oetken","Northern Trust":"Krys Russo",
+    "NorthPark":"Alex Oetken","Oncor":"Paul Baerenstecher","Paramount NYC":"Krys Russo",
+    "Phillips 66":"Paul Baerenstecher","Plaza at Enclave":"Paul Baerenstecher",
+    "QualcommBoulder":"Troy Robinson","QualcommSanDiego":"Troy Robinson",
+    "QualcommSantaClara":"Troy Robinson","Royal Philips Cambridge":"Krys Russo",
+    "Rush":"Krys Russo","Sally Beauty":"Paul Baerenstecher","So CA Gas":"Jen Trost",
+    "Southwest Airlines":"Paul Baerenstecher","Switching Stations":"Krys Russo",
+    "TBK Bank":"Paul Baerenstecher","Times Square Tower":"Krys Russo","TMC":"Alex Oetken",
+    "TMobile":"Paul Baerenstecher","Triangle Plaza":"Krys Russo","Trive":"Paul Baerenstecher",
+    "ULA":"Jen Trost","Vans OC":"Jen Trost","Vantive HQ":"Krys Russo",
+    "VF Corporation":"Jen Trost","VF Greensboro":"Jen Trost","Weatherford":"Paul Baerenstecher",
+    "Wesley Medical KS":"Jen Trost","West Memorial":"Paul Baerenstecher",
+    "Workplace Convenience Services":"Alex Oetken"
+  };
+
+  // ── Init ────────────────────────────────────────────────────────────
+  document.getElementById('event-date').valueAsDate = new Date();
+
+  // ── Firebase init (runs after all functions are defined) ────────────
+  const firebaseConfig = {
+    apiKey: "AIzaSyCGTcu2VJQw8vP1hGF6uRuN8dCcs38zQRg",
+    projectId: "pantry-checklist",
+    storageBucket: "pantry-checklist.firebasestorage.app",
+    messagingSenderId: "564968122984",
+    appId: "1:564968122984:web:0140076461fab13c7b69dd"
+  };
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+  const COLLECTION = "catering";
+
+  db.collection(COLLECTION).orderBy("timestamp", "desc").onSnapshot(
+    (snapshot) => {
+      records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const activeTab = document.querySelector('.tab-panel.active')?.id;
+      if (activeTab === 'tab-records') renderRecords();
+      if (activeTab === 'tab-analytics') renderAnalytics();
+
+      // Auto-update imported event cards based on logged BEOs
+      if (importedEvents.length > 0) {
+        var todayCheck = new Date();
+        todayCheck.setHours(0, 0, 0, 0);
+
+        // Filter out expired events
+        var activeEvents = importedEvents.filter(function(ev) {
+          if (!ev.date) return true;
+          return new Date(ev.date + 'T00:00:00') >= todayCheck;
+        });
+
+        var loggedBeos = {};
+        records.forEach(function(r) {
+          if (r.beo) loggedBeos[r.beo.trim().toLowerCase()] = true;
+        });
+
+        var changed = activeEvents.length !== importedEvents.length;
+        activeEvents = activeEvents.map(function(ev) {
+          var beoKey = (ev.beo || '').trim().toLowerCase();
+          var nowSubmitted = beoKey && loggedBeos[beoKey] ? true : false;
+          if (nowSubmitted !== ev.submitted) changed = true;
+          return Object.assign({}, ev, { submitted: nowSubmitted });
+        });
+
+        importedEvents = activeEvents;
+
+        if (changed) {
+          if (importedEvents.length === 0) {
+            document.getElementById('ai-processing').classList.remove('visible');
+            document.getElementById('event-queue').innerHTML = '';
+          } else {
+            renderEventQueue(importedEvents);
+            var pendingCount = importedEvents.filter(function(e) { return !e.submitted; }).length;
+            var statusEl = document.getElementById('ai-status');
+            if (statusEl) statusEl.textContent = importedEvents.length + ' event' + (importedEvents.length > 1 ? 's' : '') + ' loaded — ' + pendingCount + ' remaining';
+          }
+        }
+      }
+    },
+    (err) => { console.error('Listener error:', err.code, err.message); }
+  );
+
+  // Load persisted imported events
+  loadImportedEvents();
+  populateLocationDropdown('rec-filter-location', '');
+  populateLocationDropdown('filter-location', '');
+</script>
+</body>
+</html>

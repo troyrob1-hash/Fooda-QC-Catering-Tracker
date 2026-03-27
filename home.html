@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orange by Fooda — Operations Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--orange:#E8513A;--orange-dark:#c93f29;--bg:#f7f5f2;--card:#ffffff;--border:#e4dfd9;--text:#1a1a1a;--text-muted:#777;--text-dim:#bbb;--green:#22c55e}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+*{-webkit-tap-highlight-color:transparent}
+button,a{touch-action:manipulation}
+input,select,textarea{font-size:16px!important}
+
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+
+/* NAV */
+nav{background:#000;height:68px;display:flex;align-items:center;padding:0 40px;border-bottom:1px solid #1a1a1a}
+.nav-logo{display:flex;align-items:center;gap:0;text-decoration:none}
+.logo-lockup{display:flex;flex-direction:column;line-height:1}
+.logo-orange{font-family:'Playfair Display',serif;font-size:30px;font-weight:900;color:var(--orange);letter-spacing:-1px;text-transform:uppercase}
+.logo-byfooda{display:flex;align-items:center;gap:4px;margin-top:1px}
+.logo-by{font-size:10px;color:#888;letter-spacing:1px;text-transform:uppercase}
+.logo-tiles{display:inline-flex;gap:2px}
+.logo-tiles span{background:var(--orange);color:#000;font-family:'Playfair Display',serif;font-weight:700;font-size:9px;width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;border-radius:2px}
+.logo-div{width:1px;background:#333;height:28px;margin:0 12px}
+.logo-sub{font-size:11px;letter-spacing:2px;color:#888;text-transform:uppercase}
+
+/* HERO */
+.hero{padding:72px 40px 48px;max-width:1100px;margin:0 auto;width:100%}
+.hero-eyebrow{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--orange);margin-bottom:10px}
+.hero-title{font-family:'Playfair Display',serif;font-size:52px;font-weight:900;line-height:1.05;margin-bottom:12px}
+.hero-title span{color:var(--orange)}
+.hero-sub{font-size:16px;color:var(--text-muted);max-width:520px;line-height:1.6}
+
+/* CARDS */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:1100px;margin:0 auto;padding:0 40px 80px;width:100%}
+.tool-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px;text-decoration:none;color:var(--text);transition:all .25s;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.tool-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(232,81,58,.04) 0%,transparent 60%);pointer-events:none;opacity:0;transition:opacity .25s}
+.tool-card:hover{border-color:rgba(232,81,58,.4);transform:translateY(-3px);box-shadow:0 16px 48px rgba(232,81,58,.1)}
+.tool-card:hover::before{opacity:1}
+.card-icon{width:56px;height:56px;background:rgba(232,81,58,.1);border:1px solid rgba(232,81,58,.2);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:24px;transition:background .25s}
+.tool-card:hover .card-icon{background:rgba(232,81,58,.15)}
+.card-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--orange);margin-bottom:8px}
+.card-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;margin-bottom:10px;line-height:1.1}
+.card-desc{font-size:14px;color:var(--text-muted);line-height:1.6;flex:1}
+.card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:28px;padding-top:20px;border-top:1px solid var(--border)}
+.card-url{font-size:12px;color:var(--text-dim);font-family:monospace}
+.card-arrow{width:36px;height:36px;background:var(--orange);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;transition:transform .2s}
+.tool-card:hover .card-arrow{transform:translateX(3px)}
+
+/* DASHBOARD LINK */
+.dashboard-row{max-width:1100px;margin:0 auto;padding:0 40px 32px;width:100%}
+.dashboard-link{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 28px;text-decoration:none;color:var(--text);transition:all .2s}
+.dashboard-link:hover{border-color:rgba(232,81,58,.3);box-shadow:0 4px 20px rgba(0,0,0,.06)}
+.dash-left{display:flex;align-items:center;gap:16px}
+.dash-icon{width:40px;height:40px;background:#f0ece8;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.dash-title{font-size:16px;font-weight:700}
+.dash-sub{font-size:13px;color:var(--text-muted);margin-top:2px}
+.dash-right{display:flex;gap:10px;align-items:center}
+.dash-btn{padding:8px 18px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;text-decoration:none;transition:all .15s}
+.dash-btn.primary{background:var(--orange);color:#fff}
+.dash-btn.primary:hover{background:var(--orange-dark)}
+.dash-btn.secondary{background:#f0ece8;color:var(--text);border:1px solid var(--border)}
+.dash-btn.secondary:hover{background:#e8e4e0}
+
+/* FOOTER */
+footer{margin-top:auto;padding:24px 40px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.footer-text{font-size:12px;color:var(--text-dim)}
+
+@media(max-width:768px){
+  .hero{padding:48px 20px 32px}
+  .hero-title{font-size:36px}
+  .cards{grid-template-columns:1fr;padding:0 20px 60px;gap:16px}
+  .dashboard-row{padding:0 20px 24px}
+  nav{padding:0 20px}
+  .dash-right{flex-direction:column;gap:8px}
+  footer{padding:20px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="home.html">
+    <div class="logo-lockup">
+      <div class="logo-orange">ORANGE</div>
+      <div class="logo-byfooda">
+        <span class="logo-by">by</span>
+        <div class="logo-tiles"><span>f</span><span>o</span><span>o</span><span>d</span><span>a</span></div>
+      </div>
+    </div>
+    <div class="logo-div"></div>
+    <div class="logo-sub">Operations Hub</div>
+  </a>
+</nav>
+
+<div class="hero">
+  <div class="hero-eyebrow">Orange by Fooda</div>
+  <div class="hero-title">Operations <span>Hub</span></div>
+  <div class="hero-sub">Your daily tools for pantry audits and catering drop-off tracking — all in one place.</div>
+</div>
+
+<div class="dashboard-row">
+  <div style="display:flex;gap:12px;flex-wrap:wrap">
+    <a href="dashboard.html" class="dash-btn primary" style="display:inline-flex;align-items:center;gap:8px;padding:12px 22px;font-size:14px">📊 Dashboard</a>
+    <a href="analytics.html" class="dash-btn secondary" style="display:inline-flex;align-items:center;gap:8px;padding:12px 22px;font-size:14px;border:1px solid var(--border)">📈 Analytics</a>
+  </div>
+</div>
+
+<div class="cards">
+
+  <a href="pantry.html" class="tool-card">
+    <div class="card-icon">🧺</div>
+    <div class="card-label">Daily Audit</div>
+    <div class="card-title">Pantry Checklist</div>
+    <div class="card-desc">Inspect coffee machines, Bevi, pantry supplies, milk stations, Nespresso, tea, water coolers, restaurant items, and micro markets. Track issues and photo evidence per location.</div>
+    <div class="card-footer">
+      <div class="card-arrow">→</div>
+    </div>
+  </a>
+
+  <a href="catering.html" class="tool-card">
+    <div class="card-icon">🍽</div>
+    <div class="card-label">Drop-Off Tracker</div>
+    <div class="card-title">Catering Tracker</div>
+    <div class="card-desc">Log catering drop-offs with BEO numbers, scheduled vs actual times, driver info, and on-time status. Import BEO event sheets via PDF and track delivery performance.</div>
+    <div class="card-footer">
+      <div class="card-arrow">→</div>
+    </div>
+  </a>
+
+</div>
+
+<footer>
+  <span class="footer-text">Orange by Fooda · Pantry Program</span>
+  <span class="footer-text">orangepantryaudit.netlify.app</span>
+</footer>
+
+</body>
+</html>
